@@ -1,20 +1,20 @@
-import * as fs from 'fs';
+﻿import * as fs from 'fs';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 import { S3Client, PutObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
 import sharp from 'sharp';
 
-// Load environment variables from .env or .env.local
+// Load environment variables from .env.local or .env
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-  console.error('❌ Error: Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in environment variables.');
-  console.error('Please configure your .env or .env.local file with Supabase credentials.');
+  console.error('❌ Error: Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env');
+  console.error('Please configure your .env file with Supabase credentials.');
   process.exit(1);
 }
 
@@ -22,7 +22,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
   auth: { persistSession: false },
 });
 
-// Configure Cloudflare R2 S3 Client if credentials exist
+// Configure Cloudflare R2 S3 Client
 const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
 const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
 const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY;
@@ -68,13 +68,22 @@ interface CatalogProduct {
   published?: boolean;
 }
 
+/**
+ * Converts local image file to WebP (max long edge 1600px) and uploads to Cloudflare R2.
+ * Idempotent: Skips files that already exist in R2 bucket.
+ */
 async function uploadToR2IfMissing(localPath: string, r2Key: string): Promise<'uploaded' | 'skipped' | 'failed'> {
-  if (!r2Client || !R2_BUCKET_NAME || !fs.existsSync(localPath)) {
+  if (!r2Client || !R2_BUCKET_NAME) {
     return 'skipped';
   }
 
+  if (!fs.existsSync(localPath)) {
+    console.warn(`⚠️ Local image not found: ${localPath}`);
+    return 'failed';
+  }
+
   try {
-    // Check if object already exists in R2
+    // 1. Check if object already exists in R2
     try {
       await r2Client.send(
         new HeadObjectCommand({
@@ -82,30 +91,32 @@ async function uploadToR2IfMissing(localPath: string, r2Key: string): Promise<'u
           Key: r2Key,
         })
       );
-      return 'skipped'; // already exists
+      return 'skipped'; // already exists in R2
     } catch (headErr: any) {
-      // 404 means it doesn't exist, proceed to upload
+      // 404/NotFound indicates object does not exist yet -> proceed to upload
     }
 
-    // Process with sharp: convert to WebP, cap long edge at 1600px
+    // 2. Convert to WebP and cap long edge at 1600px using sharp
     const imageBuffer = fs.readFileSync(localPath);
     const optimizedBuffer = await sharp(imageBuffer)
       .resize(1600, 1600, { fit: 'inside', withoutEnlargement: true })
       .webp({ quality: 85 })
       .toBuffer();
 
+    // 3. Upload to R2 with immutable cache header
     await r2Client.send(
       new PutObjectCommand({
         Bucket: R2_BUCKET_NAME,
         Key: r2Key,
         Body: optimizedBuffer,
         ContentType: 'image/webp',
+        CacheControl: 'public, max-age=31536000, immutable',
       })
     );
 
     return 'uploaded';
-  } catch (err) {
-    console.error(`Failed to process/upload ${r2Key}:`, err);
+  } catch (err: any) {
+    console.error(`❌ Failed to upload ${r2Key} to R2:`, err.message || err);
     return 'failed';
   }
 }
@@ -116,14 +127,7 @@ async function main() {
   console.log('====================================================\n');
 
   // 1. Locate catalog.json
-  let catalogPath = path.resolve(process.cwd(), 'catalog.json');
-  if (!fs.existsSync(catalogPath)) {
-    catalogPath = path.resolve(process.cwd(), '..', 'catalog.json');
-  }
-  if (!fs.existsSync(catalogPath)) {
-    catalogPath = path.resolve('D:\\Hp\\Downloads\\catalog.json');
-  }
-
+  const catalogPath = path.resolve(process.cwd(), 'catalog.json');
   if (!fs.existsSync(catalogPath)) {
     console.error(`❌ Cannot find catalog.json at ${catalogPath}`);
     process.exit(1);
@@ -170,18 +174,24 @@ async function main() {
   // 3. Seed Products
   console.log('🛍️  Seeding products...');
   let productsInserted = 0;
+  let productsPublishedCount = 0;
   let productsFailed = 0;
   const productDbMap = new Map<string, string>(); // slug -> product_id
 
-  // Chunk products in batches of 50
   const BATCH_SIZE = 50;
   for (let i = 0; i < rawCatalog.length; i += BATCH_SIZE) {
     const chunk = rawCatalog.slice(i, i + BATCH_SIZE);
     const productPayload = chunk.map((p, idx) => {
       const categoryId = categoryMap.get(p.category.trim()) || null;
-      const priceNum = p.price !== '' && p.price !== undefined ? Number(p.price) : null;
-      const salePriceNum = p.sale_price !== '' && p.sale_price !== undefined ? Number(p.sale_price) : null;
-      const stockNum = p.stock !== '' && p.stock !== undefined ? parseInt(String(p.stock), 10) : 0;
+      const priceNum = p.price !== '' && p.price !== undefined && !isNaN(Number(p.price)) ? Number(p.price) : null;
+      const salePriceNum = p.sale_price !== '' && p.sale_price !== undefined && !isNaN(Number(p.sale_price)) ? Number(p.sale_price) : null;
+      const stockNum = p.stock !== '' && p.stock !== undefined && !isNaN(parseInt(String(p.stock), 10)) ? parseInt(String(p.stock), 10) : 0;
+
+      // is_published: true ONLY if price is set and > 0, otherwise false
+      const isPublished = priceNum !== null && priceNum > 0;
+      if (isPublished) {
+        productsPublishedCount++;
+      }
 
       return {
         daraz_id: p.id,
@@ -192,11 +202,10 @@ async function main() {
         brand: p.brand || 'No Brand',
         warranty: p.warranty || 'No Warranty',
         currency: p.currency || 'PKR',
-        price: isNaN(priceNum as number) ? null : priceNum,
-        sale_price: isNaN(salePriceNum as number) ? null : salePriceNum,
-        stock: isNaN(stockNum) ? 0 : stockNum,
-        // Publish products so the storefront can immediately display them
-        is_published: p.published !== undefined ? p.published : true,
+        price: priceNum,
+        sale_price: salePriceNum,
+        stock: stockNum,
+        is_published: isPublished,
         attributes: p.attributes || {},
         description_html: p.description_html || '',
         description_text: p.description_text || '',
@@ -220,10 +229,10 @@ async function main() {
     }
   }
 
-  console.log(`✅ ${productsInserted} products upserted (${productsFailed} failed).\n`);
+  console.log(`✅ ${productsInserted} products upserted (${productsPublishedCount} published, ${productsInserted - productsPublishedCount} unpublished/unpriced, ${productsFailed} failed).\n`);
 
-  // 4. Seed Product Images & Process R2 if enabled
-  console.log('🖼️  Seeding product images...');
+  // 4. Seed Product Images & Process R2
+  console.log('🖼️  Seeding product images & processing Cloudflare R2 uploads...');
   let imagesUploaded = 0;
   let imagesSkipped = 0;
   let imagesFailed = 0;
@@ -267,31 +276,36 @@ async function main() {
     }
   }
 
-  // Upload to R2 if client is configured and local images exist
+  // Upload to R2 if client is configured and local images folder exists
   if (r2Client && fs.existsSync(localImagesDir)) {
-    console.log('Uploading/optimizing local images to Cloudflare R2...');
+    console.log(`Uploading & optimizing ${imagePayload.length} images to Cloudflare R2 bucket: "${R2_BUCKET_NAME}"...`);
+    let count = 0;
     for (const img of imagePayload) {
+      count++;
       const localFilePath = path.join(localImagesDir, img.r2_key);
       const res = await uploadToR2IfMissing(localFilePath, img.r2_key);
       if (res === 'uploaded') imagesUploaded++;
       else if (res === 'skipped') imagesSkipped++;
       else imagesFailed++;
+
+      if (count % 100 === 0 || count === imagePayload.length) {
+        console.log(`R2 Upload Progress: ${count}/${imagePayload.length} (Uploaded: ${imagesUploaded}, Skipped: ${imagesSkipped}, Failed: ${imagesFailed})`);
+      }
     }
+  } else if (!r2Client) {
+    console.log('ℹ️  Cloudflare R2 credentials not provided; skipping R2 binary upload. Image records will still be registered in database.');
   }
 
-  // Upsert image metadata in batches of 100
+  // Batch insert image metadata into Supabase
   for (let i = 0; i < imagePayload.length; i += 100) {
     const chunk = imagePayload.slice(i, i + 100);
     const { error: imgError } = await supabase.from('product_images').insert(chunk);
-    if (imgError) {
-      // If primary key collision or already exists, ignore or log
-      // console.warn('Note on image batch:', imgError.message);
-    } else {
+    if (!imgError) {
       imagesInserted += chunk.length;
     }
   }
 
-  console.log(`✅ Image metadata registered for ${imagePayload.length} product images.\n`);
+  console.log(`✅ ${imagePayload.length} product image records processed in database.\n`);
 
   // 5. Seed Default Settings
   console.log('⚙️  Seeding default store settings...');
@@ -315,20 +329,22 @@ async function main() {
     console.log('✅ Settings initialized.\n');
   }
 
-  // Final Summary Report
+  // Summary Report
   console.log('====================================================');
   console.log('🎉 SEED & MIGRATION SUMMARY REPORT');
   console.log('====================================================');
   console.log(`📁 Source catalog:        ${rawCatalog.length} products`);
   console.log(`🏷️  Categories created:    ${categoryNames.length}`);
   console.log(`📦 Products inserted:     ${productsInserted}`);
-  console.log(`🖼️  Product images saved:  ${imagePayload.length}`);
+  console.log(`🟢 Published products:    ${productsPublishedCount} (only priced products)`);
+  console.log(`⚪ Draft/Unpriced:        ${productsInserted - productsPublishedCount}`);
+  console.log(`🖼️  Product images DB:     ${imagePayload.length}`);
   if (r2Client) {
     console.log(`☁️  R2 Images uploaded:   ${imagesUploaded}`);
     console.log(`☁️  R2 Images skipped:    ${imagesSkipped}`);
     console.log(`☁️  R2 Images failed:     ${imagesFailed}`);
   } else {
-    console.log(`☁️  R2 upload skipped:    (R2 credentials not provided in .env)`);
+    console.log(`☁️  R2 upload:            Skipped (R2 credentials not set in .env)`);
   }
   console.log('====================================================\n');
 }
