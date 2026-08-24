@@ -308,69 +308,84 @@ async function main() {
     is_white_background: boolean;
   }
 
-  const imageEntries: ImageEntry[] = [];
+  // Deduplicate entries by (product_id, r2_key) to prevent Postgres ON CONFLICT batch failure
+  const imageEntryMap = new Map<string, ImageEntry>(); // `${product_id}:${r2_key}` -> ImageEntry
   const uniqueLocalFiles = new Map<string, string>(); // base_stem -> local_filename
 
   for (const p of rawCatalog) {
     const productId = productDbMap.get(p.slug);
     if (!productId) continue;
 
-    // Gallery images
+    // Helper to register/merge an image entry
+    const registerImage = (
+      localFile: string,
+      sortOrder: number,
+      isPrimary: boolean,
+      isDesc: boolean,
+      isWhiteBg: boolean
+    ) => {
+      const stem = path.parse(localFile).name;
+      const compositeKey = `${productId}:${stem}`;
+      uniqueLocalFiles.set(stem, localFile);
+
+      const existing = imageEntryMap.get(compositeKey);
+      if (existing) {
+        // Merge flags & take lowest sort_order
+        existing.is_primary = existing.is_primary || isPrimary;
+        existing.is_description_image = existing.is_description_image || isDesc;
+        existing.is_white_background = existing.is_white_background || isWhiteBg;
+        existing.sort_order = Math.min(existing.sort_order, sortOrder);
+      } else {
+        imageEntryMap.set(compositeKey, {
+          product_id: productId,
+          r2_key: stem,
+          local_source_file: localFile,
+          base_stem: stem,
+          sort_order: sortOrder,
+          is_primary: isPrimary,
+          is_description_image: isDesc,
+          is_white_background: isWhiteBg,
+        });
+      }
+    };
+
+    // 1. Gallery images
     if (Array.isArray(p.images)) {
       p.images.forEach((img, idx) => {
         if (img.local) {
-          const stem = path.parse(img.local).name;
-          imageEntries.push({
-            product_id: productId,
-            r2_key: stem, // bare stem without extension
-            local_source_file: img.local,
-            base_stem: stem,
-            sort_order: idx + 1,
-            is_primary: idx === 0,
-            is_description_image: false,
-            is_white_background: false,
-          });
-          uniqueLocalFiles.set(stem, img.local);
+          registerImage(img.local, idx + 1, idx === 0, false, false);
         }
       });
     }
 
-    // Description body images
+    // 2. Description body images
     if (Array.isArray(p.description_images)) {
       p.description_images.forEach((filename, idx) => {
         if (filename) {
-          const stem = path.parse(filename).name;
-          imageEntries.push({
-            product_id: productId,
-            r2_key: stem, // bare stem without extension
-            local_source_file: filename,
-            base_stem: stem,
-            sort_order: 100 + idx + 1,
-            is_primary: false,
-            is_description_image: true,
-            is_white_background: false,
-          });
-          uniqueLocalFiles.set(stem, filename);
+          registerImage(filename, 100 + idx + 1, false, true, false);
         }
       });
     }
 
-    // White background images (38 products)
+    // 3. White background images (38 products)
     if (p.white_background_image && p.white_background_image.local) {
-      const stem = path.parse(p.white_background_image.local).name;
-      imageEntries.push({
-        product_id: productId,
-        r2_key: stem, // bare stem without extension
-        local_source_file: p.white_background_image.local,
-        base_stem: stem,
-        sort_order: 0, // sort_order 0 to easily prioritize when available
-        is_primary: false,
-        is_description_image: false,
-        is_white_background: true,
-      });
-      uniqueLocalFiles.set(stem, p.white_background_image.local);
+      registerImage(p.white_background_image.local, 0, false, false, true);
     }
   }
+
+  const imageEntries = Array.from(imageEntryMap.values());
+
+  // Strict Assertion: Ensure zero duplicate (product_id, r2_key) pairs exist
+  const uniquenessSet = new Set<string>();
+  for (const entry of imageEntries) {
+    const pairKey = `${entry.product_id}:${entry.r2_key}`;
+    if (uniquenessSet.has(pairKey)) {
+      throw new Error(`Assertion failed: Duplicate image pair found for product ${entry.product_id} and key ${entry.r2_key}`);
+    }
+    uniquenessSet.add(pairKey);
+  }
+
+  console.log(`Deduplication complete: ${imageEntries.length} unique product image records prepared.`);
 
   // 4a. Concurrent Cloudflare R2 Upload (Concurrency: 8)
   let totalVariantsUploaded = 0;
