@@ -37,6 +37,8 @@ CREATE TABLE IF NOT EXISTS public.products (
 );
 
 -- 3. Product Images Table
+-- Note: r2_key stores the bare object stem with no extension (e.g. "496335818-1-1df0f6c5").
+-- The custom storefront image loader appends "-300w.webp", "-700w.webp", or "-1400w.webp".
 CREATE TABLE IF NOT EXISTS public.product_images (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     product_id UUID NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
@@ -44,6 +46,7 @@ CREATE TABLE IF NOT EXISTS public.product_images (
     sort_order INTEGER DEFAULT 0,
     is_primary BOOLEAN DEFAULT FALSE,
     is_description_image BOOLEAN DEFAULT FALSE,
+    is_white_background BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
     CONSTRAINT uq_product_images_product_r2_key UNIQUE (product_id, r2_key)
 );
@@ -77,9 +80,9 @@ CREATE TABLE IF NOT EXISTS public.order_items (
     line_total NUMERIC DEFAULT 0 NOT NULL
 );
 
--- 6. Settings Table
+-- 6. Settings Table (Strict Singleton: exactly one row with id = 1)
 CREATE TABLE IF NOT EXISTS public.settings (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
     store_name TEXT NOT NULL DEFAULT 'Baby Store',
     store_domain TEXT NOT NULL DEFAULT '',
     whatsapp_number TEXT NOT NULL DEFAULT '',

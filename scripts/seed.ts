@@ -28,16 +28,26 @@ const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
 const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY;
 const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME;
 
+const isSkipImagesFlag = process.argv.includes('--skip-images');
+
 let r2Client: S3Client | null = null;
-if (R2_ACCOUNT_ID && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY && R2_BUCKET_NAME) {
+const hasR2Creds = Boolean(R2_ACCOUNT_ID && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY && R2_BUCKET_NAME);
+
+if (hasR2Creds) {
   r2Client = new S3Client({
     region: 'auto',
     endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
     credentials: {
-      accessKeyId: R2_ACCESS_KEY_ID,
-      secretAccessKey: R2_SECRET_ACCESS_KEY,
+      accessKeyId: R2_ACCESS_KEY_ID!,
+      secretAccessKey: R2_SECRET_ACCESS_KEY!,
     },
   });
+} else if (!isSkipImagesFlag) {
+  console.error('❌ Error: Cloudflare R2 credentials (R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME) are missing in .env.');
+  console.error('The seed script requires R2 credentials to generate responsive WebP variants (300w, 700w, 1400w) and upload them.');
+  console.error('If you intentionally want to test DB seeding without R2 uploads, run with the --skip-images flag:');
+  console.error('  npm run seed -- --skip-images\n');
+  process.exit(1);
 }
 
 interface CatalogImage {
@@ -295,6 +305,7 @@ async function main() {
     sort_order: number;
     is_primary: boolean;
     is_description_image: boolean;
+    is_white_background: boolean;
   }
 
   const imageEntries: ImageEntry[] = [];
@@ -309,15 +320,15 @@ async function main() {
       p.images.forEach((img, idx) => {
         if (img.local) {
           const stem = path.parse(img.local).name;
-          const r2Key = `${stem}.webp`;
           imageEntries.push({
             product_id: productId,
-            r2_key: r2Key,
+            r2_key: stem, // bare stem without extension
             local_source_file: img.local,
             base_stem: stem,
             sort_order: idx + 1,
             is_primary: idx === 0,
             is_description_image: false,
+            is_white_background: false,
           });
           uniqueLocalFiles.set(stem, img.local);
         }
@@ -329,19 +340,35 @@ async function main() {
       p.description_images.forEach((filename, idx) => {
         if (filename) {
           const stem = path.parse(filename).name;
-          const r2Key = `${stem}.webp`;
           imageEntries.push({
             product_id: productId,
-            r2_key: r2Key,
+            r2_key: stem, // bare stem without extension
             local_source_file: filename,
             base_stem: stem,
             sort_order: 100 + idx + 1,
             is_primary: false,
             is_description_image: true,
+            is_white_background: false,
           });
           uniqueLocalFiles.set(stem, filename);
         }
       });
+    }
+
+    // White background images (38 products)
+    if (p.white_background_image && p.white_background_image.local) {
+      const stem = path.parse(p.white_background_image.local).name;
+      imageEntries.push({
+        product_id: productId,
+        r2_key: stem, // bare stem without extension
+        local_source_file: p.white_background_image.local,
+        base_stem: stem,
+        sort_order: 0, // sort_order 0 to easily prioritize when available
+        is_primary: false,
+        is_description_image: false,
+        is_white_background: true,
+      });
+      uniqueLocalFiles.set(stem, p.white_background_image.local);
     }
   }
 
@@ -367,8 +394,8 @@ async function main() {
         console.log(`R2 Progress: ${completedImages}/${uniqueFileList.length} images processed (Variants: ${totalVariantsUploaded} uploaded, ${totalVariantsSkipped} skipped, ${totalVariantsFailed} failed)`);
       }
     });
-  } else if (!r2Client) {
-    console.log('ℹ️  Cloudflare R2 credentials not configured in .env. Skipping binary upload to R2; registering image keys in database.');
+  } else if (isSkipImagesFlag) {
+    console.log('⚠️  --skip-images flag active: Skipped R2 image upload; registering image stems in database.');
   }
 
   // 4b. Idempotent Database Upsert on product_images
@@ -381,6 +408,7 @@ async function main() {
     sort_order: entry.sort_order,
     is_primary: entry.is_primary,
     is_description_image: entry.is_description_image,
+    is_white_background: entry.is_white_background,
   }));
 
   for (let i = 0; i < dbPayload.length; i += 100) {
@@ -400,11 +428,12 @@ async function main() {
 
   console.log(`✅ ${imagesDbInserted} product image rows upserted into database (${imagesDbFailed} failed).\n`);
 
-  // 5. Seed Default Settings
-  console.log('⚙️  Seeding default store settings...');
+  // 5. Seed Singleton Settings Table (id = 1)
+  console.log('⚙️  Seeding singleton store settings (id = 1)...');
   const { error: settingsError } = await supabase.from('settings').upsert(
     [
       {
+        id: 1,
         store_name: process.env.NEXT_PUBLIC_STORE_NAME || 'Baby Store',
         store_domain: process.env.NEXT_PUBLIC_STORE_DOMAIN || '',
         whatsapp_number: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '',
@@ -413,13 +442,13 @@ async function main() {
         announcement_bar_text: 'Cash on Delivery Available Nationwide | Easy Returns',
       },
     ],
-    { onConflict: 'store_name' }
+    { onConflict: 'id' }
   );
 
   if (settingsError) {
-    console.warn('Note on settings upsert:', settingsError.message);
+    console.error('❌ Error initializing settings:', settingsError.message);
   } else {
-    console.log('✅ Store settings initialized.\n');
+    console.log('✅ Store settings initialized (id = 1).\n');
   }
 
   // Summary Report
@@ -435,7 +464,7 @@ async function main() {
   if (r2Client) {
     console.log(`☁️  R2 300w/700w/1400w:   ${totalVariantsUploaded} uploaded, ${totalVariantsSkipped} skipped, ${totalVariantsFailed} failed`);
   } else {
-    console.log(`☁️  R2 upload:            Skipped (R2 credentials not provided in .env)`);
+    console.log(`☁️  R2 upload:            Skipped (--skip-images flag active)`);
   }
   console.log('====================================================\n');
 }

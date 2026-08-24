@@ -178,9 +178,6 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public.orders TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.order_items TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.settings TO authenticated;
 
--- Service role full permissions (backend seeds / backups / admin actions)
+-- Service role full permissions (backend seeds / migrations / admin actions)
 GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
-
--- Sequences for ID generators
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;

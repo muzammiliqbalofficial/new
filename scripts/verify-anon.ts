@@ -76,7 +76,7 @@ async function verifyAnonAccess() {
   console.log('\n3️⃣  Testing anonymous read on `product_images` table...');
   const { data: images, error: imgError } = await anonClient
     .from('product_images')
-    .select('id, r2_key, is_primary, is_description_image')
+    .select('id, r2_key, is_primary, is_description_image, is_white_background')
     .limit(5);
 
   if (imgError) {
@@ -84,20 +84,24 @@ async function verifyAnonAccess() {
     allPassed = false;
   } else {
     console.log(`✅ SUCCESS: Product images query executed without permission errors.`);
+    if (images && images.length > 0) {
+      console.log(`   Sample bare stem r2_key: "${images[0].r2_key}"`);
+    }
   }
 
-  // 4. Query Settings
-  console.log('\n4️⃣  Testing anonymous read on `settings` table...');
+  // 4. Query Singleton Settings
+  console.log('\n4️⃣  Testing anonymous read on `settings` table (id = 1)...');
   const { data: settings, error: setError } = await anonClient
     .from('settings')
     .select('*')
-    .limit(1);
+    .eq('id', 1)
+    .single();
 
   if (setError) {
     console.error('❌ FAILED reading settings:', setError.message);
     allPassed = false;
   } else {
-    console.log(`✅ SUCCESS: Retrieved store settings (Store: "${settings?.[0]?.store_name}").`);
+    console.log(`✅ SUCCESS: Retrieved singleton store settings (Store: "${settings?.store_name}").`);
   }
 
   // 5. Test RLS Security Boundary with a real order probe

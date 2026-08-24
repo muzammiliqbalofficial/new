@@ -1,5 +1,5 @@
 ﻿-- 03_full_setup.sql: Complete Supabase Database Setup for Baby & Kids Store
--- Contains schema creation with unique constraints, indexes, RLS policies, and scoped PostgREST Data API grants.
+-- Contains schema creation with unique constraints, singleton settings, indexes, RLS policies, and scoped PostgREST Data API grants.
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -37,7 +37,9 @@ CREATE TABLE IF NOT EXISTS public.products (
     updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
--- 3. Product Images Table (with UNIQUE constraint on product_id, r2_key for idempotency)
+-- 3. Product Images Table
+-- Note: r2_key stores the bare object stem with no extension (e.g. "496335818-1-1df0f6c5").
+-- The custom storefront image loader appends "-300w.webp", "-700w.webp", or "-1400w.webp".
 CREATE TABLE IF NOT EXISTS public.product_images (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     product_id UUID NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
@@ -45,6 +47,7 @@ CREATE TABLE IF NOT EXISTS public.product_images (
     sort_order INTEGER DEFAULT 0,
     is_primary BOOLEAN DEFAULT FALSE,
     is_description_image BOOLEAN DEFAULT FALSE,
+    is_white_background BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
     CONSTRAINT uq_product_images_product_r2_key UNIQUE (product_id, r2_key)
 );
@@ -78,9 +81,9 @@ CREATE TABLE IF NOT EXISTS public.order_items (
     line_total NUMERIC DEFAULT 0 NOT NULL
 );
 
--- 6. Settings Table
+-- 6. Settings Table (Strict Singleton: exactly one row with id = 1)
 CREATE TABLE IF NOT EXISTS public.settings (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
     store_name TEXT NOT NULL DEFAULT 'Baby Store',
     store_domain TEXT NOT NULL DEFAULT '',
     whatsapp_number TEXT NOT NULL DEFAULT '',
@@ -205,4 +208,3 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public.settings TO authenticated;
 
 GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
