@@ -1,4 +1,4 @@
--- 02_rls_and_grants.sql: Row Level Security and PostgREST Data API Grants
+﻿-- 02_rls_and_grants.sql: Row Level Security and Scoped PostgREST Data API Grants
 
 -- ==============================================================================
 -- 1. Enable Row Level Security (RLS) on all tables
@@ -156,13 +156,13 @@ CREATE POLICY "Allow service_role full access settings"
     WITH CHECK (TRUE);
 
 -- ==============================================================================
--- 4. PostgREST Data API Grants (Post-May 30, 2026 Supabase Requirement)
+-- 4. Scoped PostgREST Data API Grants (Post-May 30, 2026 Supabase Requirement)
 -- ==============================================================================
 
--- Ensure schema usage
+-- Schema usage
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
 
--- Grant anonymous client permissions
+-- Scoped table permissions for anonymous storefront client
 GRANT SELECT ON public.categories TO anon;
 GRANT SELECT ON public.products TO anon;
 GRANT SELECT ON public.product_images TO anon;
@@ -170,16 +170,17 @@ GRANT SELECT ON public.settings TO anon;
 GRANT INSERT ON public.orders TO anon;
 GRANT INSERT ON public.order_items TO anon;
 
--- Grant authenticated (admin) permissions
-GRANT ALL ON ALL TABLES IN SCHEMA public TO authenticated;
+-- Scoped table permissions for authenticated admin account
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.categories TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.products TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.product_images TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.orders TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.order_items TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.settings TO authenticated;
 
--- Grant service_role full permissions
+-- Service role full permissions (backend seeds / backups / admin actions)
 GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
 
--- Grant sequence permissions
+-- Sequences for ID generators
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
-
--- Configure default future table privileges
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO postgres, service_role;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO anon, authenticated;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;

@@ -1,4 +1,4 @@
--- 01_schema.sql: Baby & Kids Store Database Schema
+﻿-- 01_schema.sql: Baby & Kids Store Database Schema
 
 -- Enable UUID extension if not enabled
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -44,7 +44,8 @@ CREATE TABLE IF NOT EXISTS public.product_images (
     sort_order INTEGER DEFAULT 0,
     is_primary BOOLEAN DEFAULT FALSE,
     is_description_image BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+    created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+    CONSTRAINT uq_product_images_product_r2_key UNIQUE (product_id, r2_key)
 );
 
 -- 4. Orders Table
@@ -79,7 +80,7 @@ CREATE TABLE IF NOT EXISTS public.order_items (
 -- 6. Settings Table
 CREATE TABLE IF NOT EXISTS public.settings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    store_name TEXT NOT NULL DEFAULT 'Baby & Kids Store',
+    store_name TEXT NOT NULL DEFAULT 'Baby Store',
     store_domain TEXT NOT NULL DEFAULT '',
     whatsapp_number TEXT NOT NULL DEFAULT '',
     contact_email TEXT NOT NULL DEFAULT '',

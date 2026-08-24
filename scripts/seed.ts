@@ -68,57 +68,108 @@ interface CatalogProduct {
   published?: boolean;
 }
 
+// Responsive variant specifications
+const VARIANTS = [
+  { suffix: '300w', width: 300, quality: 80 },
+  { suffix: '700w', width: 700, quality: 82 },
+  { suffix: '1400w', width: 1400, quality: 85 },
+];
+
 /**
- * Converts local image file to WebP (max long edge 1600px) and uploads to Cloudflare R2.
- * Idempotent: Skips files that already exist in R2 bucket.
+ * Checks if a specific object key exists in R2 bucket
  */
-async function uploadToR2IfMissing(localPath: string, r2Key: string): Promise<'uploaded' | 'skipped' | 'failed'> {
-  if (!r2Client || !R2_BUCKET_NAME) {
-    return 'skipped';
-  }
-
-  if (!fs.existsSync(localPath)) {
-    console.warn(`⚠️ Local image not found: ${localPath}`);
-    return 'failed';
-  }
-
+async function r2ObjectExists(key: string): Promise<boolean> {
+  if (!r2Client || !R2_BUCKET_NAME) return false;
   try {
-    // 1. Check if object already exists in R2
-    try {
-      await r2Client.send(
-        new HeadObjectCommand({
-          Bucket: R2_BUCKET_NAME,
-          Key: r2Key,
-        })
-      );
-      return 'skipped'; // already exists in R2
-    } catch (headErr: any) {
-      // 404/NotFound indicates object does not exist yet -> proceed to upload
-    }
-
-    // 2. Convert to WebP and cap long edge at 1600px using sharp
-    const imageBuffer = fs.readFileSync(localPath);
-    const optimizedBuffer = await sharp(imageBuffer)
-      .resize(1600, 1600, { fit: 'inside', withoutEnlargement: true })
-      .webp({ quality: 85 })
-      .toBuffer();
-
-    // 3. Upload to R2 with immutable cache header
     await r2Client.send(
-      new PutObjectCommand({
+      new HeadObjectCommand({
         Bucket: R2_BUCKET_NAME,
-        Key: r2Key,
-        Body: optimizedBuffer,
-        ContentType: 'image/webp',
-        CacheControl: 'public, max-age=31536000, immutable',
+        Key: key,
       })
     );
-
-    return 'uploaded';
+    return true;
   } catch (err: any) {
-    console.error(`❌ Failed to upload ${r2Key} to R2:`, err.message || err);
-    return 'failed';
+    return false;
   }
+}
+
+/**
+ * Processes a local image file into 3 responsive WebP variants (300w, 700w, 1400w)
+ * and uploads missing variants to Cloudflare R2.
+ */
+async function processAndUploadImageVariants(
+  localPath: string,
+  baseStem: string
+): Promise<{ uploaded: number; skipped: number; failed: number }> {
+  if (!r2Client || !R2_BUCKET_NAME || !fs.existsSync(localPath)) {
+    return { uploaded: 0, skipped: 0, failed: fs.existsSync(localPath) ? 0 : 3 };
+  }
+
+  let uploaded = 0;
+  let skipped = 0;
+  let failed = 0;
+
+  try {
+    const rawBuffer = fs.readFileSync(localPath);
+
+    for (const v of VARIANTS) {
+      const variantKey = `${baseStem}-${v.suffix}.webp`;
+
+      const exists = await r2ObjectExists(variantKey);
+      if (exists) {
+        skipped++;
+        continue;
+      }
+
+      try {
+        const webpBuffer = await sharp(rawBuffer)
+          .resize(v.width, v.width, { fit: 'inside', withoutEnlargement: true })
+          .webp({ quality: v.quality })
+          .toBuffer();
+
+        await r2Client.send(
+          new PutObjectCommand({
+            Bucket: R2_BUCKET_NAME,
+            Key: variantKey,
+            Body: webpBuffer,
+            ContentType: 'image/webp',
+            CacheControl: 'public, max-age=31536000, immutable',
+          })
+        );
+        uploaded++;
+      } catch (uploadErr: any) {
+        console.error(`❌ Failed variant ${variantKey}:`, uploadErr.message || uploadErr);
+        failed++;
+      }
+    }
+  } catch (readErr: any) {
+    console.error(`❌ Failed reading image ${localPath}:`, readErr.message || readErr);
+    failed += 3;
+  }
+
+  return { uploaded, skipped, failed };
+}
+
+/**
+ * Concurrency worker pool runner (max 8 concurrent tasks)
+ */
+async function runConcurrent<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T, index: number) => Promise<R>
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let currentIndex = 0;
+
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (currentIndex < items.length) {
+      const index = currentIndex++;
+      results[index] = await fn(items[index], index);
+    }
+  });
+
+  await Promise.all(workers);
+  return results;
 }
 
 async function main() {
@@ -126,7 +177,7 @@ async function main() {
   console.log('🚀 Starting Baby & Kids Store Database Migration & Seed');
   console.log('====================================================\n');
 
-  // 1. Locate catalog.json
+  // 1. Locate and read catalog.json
   const catalogPath = path.resolve(process.cwd(), 'catalog.json');
   if (!fs.existsSync(catalogPath)) {
     console.error(`❌ Cannot find catalog.json at ${catalogPath}`);
@@ -161,7 +212,7 @@ async function main() {
     .select('id, name, slug');
 
   if (catError) {
-    console.error('❌ Error seeding categories:', catError);
+    console.error('❌ Error seeding categories:', catError.message);
     process.exit(1);
   }
 
@@ -219,7 +270,7 @@ async function main() {
       .select('id, slug');
 
     if (prodError) {
-      console.error(`❌ Error inserting product batch ${i}-${i + chunk.length}:`, prodError);
+      console.error(`❌ Error inserting product batch ${i}-${i + chunk.length}:`, prodError.message);
       productsFailed += chunk.length;
     } else {
       productsInserted += (insertedChunk || []).length;
@@ -229,18 +280,26 @@ async function main() {
     }
   }
 
-  console.log(`✅ ${productsInserted} products upserted (${productsPublishedCount} published, ${productsInserted - productsPublishedCount} unpublished/unpriced, ${productsFailed} failed).\n`);
+  console.log(`✅ ${productsInserted} products upserted (${productsPublishedCount} published, ${productsInserted - productsPublishedCount} unpriced/draft, ${productsFailed} failed).\n`);
 
-  // 4. Seed Product Images & Process R2
-  console.log('🖼️  Seeding product images & processing Cloudflare R2 uploads...');
-  let imagesUploaded = 0;
-  let imagesSkipped = 0;
-  let imagesFailed = 0;
-  let imagesInserted = 0;
+  // 4. Seed Product Images & Cloudflare R2 Uploads
+  console.log('🖼️  Preparing product image records and responsive WebP variants (300w, 700w, 1400w)...');
 
   const localImagesDir = path.resolve(process.cwd(), 'images');
 
-  const imagePayload: any[] = [];
+  interface ImageEntry {
+    product_id: string;
+    r2_key: string;
+    local_source_file: string;
+    base_stem: string;
+    sort_order: number;
+    is_primary: boolean;
+    is_description_image: boolean;
+  }
+
+  const imageEntries: ImageEntry[] = [];
+  const uniqueLocalFiles = new Map<string, string>(); // base_stem -> local_filename
+
   for (const p of rawCatalog) {
     const productId = productDbMap.get(p.slug);
     if (!productId) continue;
@@ -249,73 +308,107 @@ async function main() {
     if (Array.isArray(p.images)) {
       p.images.forEach((img, idx) => {
         if (img.local) {
-          imagePayload.push({
+          const stem = path.parse(img.local).name;
+          const r2Key = `${stem}.webp`;
+          imageEntries.push({
             product_id: productId,
-            r2_key: img.local,
+            r2_key: r2Key,
+            local_source_file: img.local,
+            base_stem: stem,
             sort_order: idx + 1,
             is_primary: idx === 0,
             is_description_image: false,
           });
+          uniqueLocalFiles.set(stem, img.local);
         }
       });
     }
 
-    // Description images
+    // Description body images
     if (Array.isArray(p.description_images)) {
       p.description_images.forEach((filename, idx) => {
         if (filename) {
-          imagePayload.push({
+          const stem = path.parse(filename).name;
+          const r2Key = `${stem}.webp`;
+          imageEntries.push({
             product_id: productId,
-            r2_key: filename,
+            r2_key: r2Key,
+            local_source_file: filename,
+            base_stem: stem,
             sort_order: 100 + idx + 1,
             is_primary: false,
             is_description_image: true,
           });
+          uniqueLocalFiles.set(stem, filename);
         }
       });
     }
   }
 
-  // Upload to R2 if client is configured and local images folder exists
+  // 4a. Concurrent Cloudflare R2 Upload (Concurrency: 8)
+  let totalVariantsUploaded = 0;
+  let totalVariantsSkipped = 0;
+  let totalVariantsFailed = 0;
+
   if (r2Client && fs.existsSync(localImagesDir)) {
-    console.log(`Uploading & optimizing ${imagePayload.length} images to Cloudflare R2 bucket: "${R2_BUCKET_NAME}"...`);
-    let count = 0;
-    for (const img of imagePayload) {
-      count++;
-      const localFilePath = path.join(localImagesDir, img.r2_key);
-      const res = await uploadToR2IfMissing(localFilePath, img.r2_key);
-      if (res === 'uploaded') imagesUploaded++;
-      else if (res === 'skipped') imagesSkipped++;
-      else imagesFailed++;
+    const uniqueFileList = Array.from(uniqueLocalFiles.entries());
+    console.log(`☁️  Processing ${uniqueFileList.length} distinct source images into 3 responsive variants each (8 concurrent workers)...`);
 
-      if (count % 100 === 0 || count === imagePayload.length) {
-        console.log(`R2 Upload Progress: ${count}/${imagePayload.length} (Uploaded: ${imagesUploaded}, Skipped: ${imagesSkipped}, Failed: ${imagesFailed})`);
+    let completedImages = 0;
+    await runConcurrent(uniqueFileList, 8, async ([stem, filename]) => {
+      const localFilePath = path.join(localImagesDir, filename);
+      const res = await processAndUploadImageVariants(localFilePath, stem);
+      totalVariantsUploaded += res.uploaded;
+      totalVariantsSkipped += res.skipped;
+      totalVariantsFailed += res.failed;
+      completedImages++;
+
+      if (completedImages % 100 === 0 || completedImages === uniqueFileList.length) {
+        console.log(`R2 Progress: ${completedImages}/${uniqueFileList.length} images processed (Variants: ${totalVariantsUploaded} uploaded, ${totalVariantsSkipped} skipped, ${totalVariantsFailed} failed)`);
       }
-    }
+    });
   } else if (!r2Client) {
-    console.log('ℹ️  Cloudflare R2 credentials not provided; skipping R2 binary upload. Image records will still be registered in database.');
+    console.log('ℹ️  Cloudflare R2 credentials not configured in .env. Skipping binary upload to R2; registering image keys in database.');
   }
 
-  // Batch insert image metadata into Supabase
-  for (let i = 0; i < imagePayload.length; i += 100) {
-    const chunk = imagePayload.slice(i, i + 100);
-    const { error: imgError } = await supabase.from('product_images').insert(chunk);
-    if (!imgError) {
-      imagesInserted += chunk.length;
+  // 4b. Idempotent Database Upsert on product_images
+  let imagesDbInserted = 0;
+  let imagesDbFailed = 0;
+
+  const dbPayload = imageEntries.map((entry) => ({
+    product_id: entry.product_id,
+    r2_key: entry.r2_key,
+    sort_order: entry.sort_order,
+    is_primary: entry.is_primary,
+    is_description_image: entry.is_description_image,
+  }));
+
+  for (let i = 0; i < dbPayload.length; i += 100) {
+    const chunk = dbPayload.slice(i, i + 100);
+    const { data: upsertedImages, error: imgError } = await supabase
+      .from('product_images')
+      .upsert(chunk, { onConflict: 'product_id, r2_key' })
+      .select('id');
+
+    if (imgError) {
+      console.error(`❌ Error upserting image batch ${i}-${i + chunk.length}:`, imgError.message);
+      imagesDbFailed += chunk.length;
+    } else {
+      imagesDbInserted += (upsertedImages || []).length;
     }
   }
 
-  console.log(`✅ ${imagePayload.length} product image records processed in database.\n`);
+  console.log(`✅ ${imagesDbInserted} product image rows upserted into database (${imagesDbFailed} failed).\n`);
 
   // 5. Seed Default Settings
   console.log('⚙️  Seeding default store settings...');
   const { error: settingsError } = await supabase.from('settings').upsert(
     [
       {
-        store_name: process.env.NEXT_PUBLIC_STORE_NAME || 'Tiny Kiddies',
-        store_domain: process.env.NEXT_PUBLIC_STORE_DOMAIN || 'tinykiddies.pk',
-        whatsapp_number: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '923001234567',
-        contact_email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'info@tinykiddies.pk',
+        store_name: process.env.NEXT_PUBLIC_STORE_NAME || 'Baby Store',
+        store_domain: process.env.NEXT_PUBLIC_STORE_DOMAIN || '',
+        whatsapp_number: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '',
+        contact_email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || '',
         shipping_flat_rate: Number(process.env.NEXT_PUBLIC_SHIPPING_FLAT_RATE) || 200,
         announcement_bar_text: 'Cash on Delivery Available Nationwide | Easy Returns',
       },
@@ -324,9 +417,9 @@ async function main() {
   );
 
   if (settingsError) {
-    console.warn('Note on settings seed:', settingsError.message);
+    console.warn('Note on settings upsert:', settingsError.message);
   } else {
-    console.log('✅ Settings initialized.\n');
+    console.log('✅ Store settings initialized.\n');
   }
 
   // Summary Report
@@ -335,16 +428,14 @@ async function main() {
   console.log('====================================================');
   console.log(`📁 Source catalog:        ${rawCatalog.length} products`);
   console.log(`🏷️  Categories created:    ${categoryNames.length}`);
-  console.log(`📦 Products inserted:     ${productsInserted}`);
+  console.log(`📦 Products upserted:     ${productsInserted} (${productsFailed} failed)`);
   console.log(`🟢 Published products:    ${productsPublishedCount} (only priced products)`);
-  console.log(`⚪ Draft/Unpriced:        ${productsInserted - productsPublishedCount}`);
-  console.log(`🖼️  Product images DB:     ${imagePayload.length}`);
+  console.log(`⚪ Unpriced/Draft:        ${productsInserted - productsPublishedCount}`);
+  console.log(`🖼️  Product images in DB:  ${imagesDbInserted} upserted (${imagesDbFailed} failed)`);
   if (r2Client) {
-    console.log(`☁️  R2 Images uploaded:   ${imagesUploaded}`);
-    console.log(`☁️  R2 Images skipped:    ${imagesSkipped}`);
-    console.log(`☁️  R2 Images failed:     ${imagesFailed}`);
+    console.log(`☁️  R2 300w/700w/1400w:   ${totalVariantsUploaded} uploaded, ${totalVariantsSkipped} skipped, ${totalVariantsFailed} failed`);
   } else {
-    console.log(`☁️  R2 upload:            Skipped (R2 credentials not set in .env)`);
+    console.log(`☁️  R2 upload:            Skipped (R2 credentials not provided in .env)`);
   }
   console.log('====================================================\n');
 }

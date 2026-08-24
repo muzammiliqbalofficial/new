@@ -1,5 +1,5 @@
--- 03_full_setup.sql: Complete Supabase Database Setup for Baby & Kids Store
--- Contains schema creation, indexes, RLS policies, and PostgREST Data API grants.
+﻿-- 03_full_setup.sql: Complete Supabase Database Setup for Baby & Kids Store
+-- Contains schema creation with unique constraints, indexes, RLS policies, and scoped PostgREST Data API grants.
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS public.products (
     updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
--- 3. Product Images Table
+-- 3. Product Images Table (with UNIQUE constraint on product_id, r2_key for idempotency)
 CREATE TABLE IF NOT EXISTS public.product_images (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     product_id UUID NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
@@ -45,7 +45,8 @@ CREATE TABLE IF NOT EXISTS public.product_images (
     sort_order INTEGER DEFAULT 0,
     is_primary BOOLEAN DEFAULT FALSE,
     is_description_image BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+    created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+    CONSTRAINT uq_product_images_product_r2_key UNIQUE (product_id, r2_key)
 );
 
 -- 4. Orders Table
@@ -80,7 +81,7 @@ CREATE TABLE IF NOT EXISTS public.order_items (
 -- 6. Settings Table
 CREATE TABLE IF NOT EXISTS public.settings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    store_name TEXT NOT NULL DEFAULT 'Baby & Kids Store',
+    store_name TEXT NOT NULL DEFAULT 'Baby Store',
     store_domain TEXT NOT NULL DEFAULT '',
     whatsapp_number TEXT NOT NULL DEFAULT '',
     contact_email TEXT NOT NULL DEFAULT '',
@@ -184,7 +185,7 @@ CREATE POLICY "Allow service_role full access settings"
     ON public.settings FOR ALL TO service_role USING (TRUE) WITH CHECK (TRUE);
 
 -- ==============================================================================
--- PostgREST Data API Grants (Post-May 30, 2026 Supabase Requirement)
+-- Scoped PostgREST Data API Grants (Post-May 30, 2026 Supabase Requirement)
 -- ==============================================================================
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
 
@@ -195,10 +196,13 @@ GRANT SELECT ON public.settings TO anon;
 GRANT INSERT ON public.orders TO anon;
 GRANT INSERT ON public.order_items TO anon;
 
-GRANT ALL ON ALL TABLES IN SCHEMA public TO authenticated;
-GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.categories TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.products TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.product_images TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.orders TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.order_items TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.settings TO authenticated;
 
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO postgres, service_role;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO anon, authenticated;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
