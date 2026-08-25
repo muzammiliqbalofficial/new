@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import React from 'react';
-import { Truck, Phone, Sparkles } from 'lucide-react';
+import { Truck, Phone } from 'lucide-react';
 
 interface Props {
   announcementText?: string;
@@ -10,7 +10,7 @@ interface Props {
 
 export default function AnnouncementBar({
   announcementText = 'Cash on Delivery Available Nationwide • Easy 7-Day Returns',
-  whatsappNumber = '923000000000',
+  whatsappNumber = '923366895035',
 }: Props) {
   const cleanPhone = whatsappNumber.replace(/[^0-9]/g, '');
 
@@ -26,10 +26,10 @@ export default function AnnouncementBar({
             href={`https://wa.me/${cleanPhone}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-white flex items-center space-x-1 transition-colors"
+            className="hover:text-white flex items-center space-x-1 transition-colors font-medium"
           >
             <Phone className="w-3 h-3" />
-            <span>Order via WhatsApp</span>
+            <span>Order on WhatsApp: +92 336 6895035</span>
           </a>
         </div>
       </div>

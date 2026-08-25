@@ -59,8 +59,8 @@ export function buildWhatsAppEnquiryLink(
   productUrl: string,
   whatsappNumber?: string
 ): string {
-  const phone = (whatsappNumber || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '923000000000').replace(/[^0-9]/g, '');
-  const message = `Hello! I would like to inquire about the price and availability of:\n\n*${productName}*\n${productUrl}\n\nPlease share details.`;
+  const phone = (whatsappNumber || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '923366895035').replace(/[^0-9]/g, '');
+  const message = `Hello Tiny Kids! I would like to inquire about:\n\n*${productName}*\n${productUrl}\n\nPlease share details and available sizes.`;
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }
 
@@ -74,9 +74,9 @@ export function buildWhatsAppOrderConfirmationLink(
   items: { name: string; quantity: number }[],
   whatsappNumber?: string
 ): string {
-  const phone = (whatsappNumber || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '923000000000').replace(/[^0-9]/g, '');
+  const phone = (whatsappNumber || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '923366895035').replace(/[^0-9]/g, '');
   const itemsText = items.map((i) => `• ${i.name} (x${i.quantity})`).join('\n');
-  const message = `🛍️ *NEW ORDER CONFIRMATION*\n\nOrder Number: *${orderNumber}*\nCustomer Name: *${customerName}*\n\nItems:\n${itemsText}\n\nTotal Amount: *${formatPrice(total)}*\nPayment: *Cash on Delivery*\n\nPlease confirm my order. Thank you!`;
+  const message = `🛍️ *NEW ORDER CONFIRMATION — TINY KIDS*\n\nOrder Reference: *${orderNumber}*\nCustomer Name: *${customerName}*\n\nItems:\n${itemsText}\n\nTotal Amount: *${formatPrice(total)}*\nPayment: *Cash on Delivery (COD)*\n\nPlease confirm my order. Thank you!`;
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }
 

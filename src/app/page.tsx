@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Sparkles, ArrowRight, ShieldCheck, Truck, HeartHandshake, Star, CheckCircle2 } from 'lucide-react';
+import { Sparkles, ArrowRight, ShieldCheck, Truck, HeartHandshake, Star } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import ProductCard from '@/components/ProductCard';
 import TrustBar from '@/components/TrustBar';
@@ -134,15 +134,17 @@ export default async function HomePage() {
             {/* Right Hero Showcase */}
             <div className="lg:col-span-5 relative">
               <div className="relative mx-auto max-w-sm sm:max-w-md rounded-3xl bg-white p-3.5 sm:p-4 shadow-hover border border-charcoal-border/60">
-                <div className="relative aspect-square rounded-2xl bg-cream-100 overflow-hidden border border-charcoal-border/40">
-                  <Image
-                    src={featuredProducts[0] ? resolveMainImage(featuredProducts[0]) : 'placeholder-product'}
-                    alt="Baby Starter Set"
-                    fill
-                    priority
-                    sizes="(max-width: 768px) 90vw, 400px"
-                    className="object-cover object-center"
-                  />
+                <div className="relative aspect-square rounded-2xl bg-cream-50/70 p-4 overflow-hidden border border-charcoal-border/40 flex items-center justify-center">
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={featuredProducts[0] ? resolveMainImage(featuredProducts[0]) : 'placeholder-product'}
+                      alt="Baby Starter Set"
+                      fill
+                      priority
+                      sizes="(max-width: 768px) 90vw, 400px"
+                      className="object-contain object-center"
+                    />
+                  </div>
                   <div className="absolute top-3 right-3 bg-coral text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
                     Top Trending
                   </div>
@@ -191,14 +193,16 @@ export default async function HomePage() {
               className="group relative bg-white rounded-3xl p-5 border border-charcoal-border/70 shadow-soft hover:shadow-hover transition-all flex flex-col justify-between overflow-hidden"
             >
               <div>
-                <div className="relative w-full aspect-[4/3] rounded-2xl bg-cream-100 overflow-hidden mb-4 border border-charcoal-border/40">
-                  <Image
-                    src={cat.imageStem}
-                    alt={cat.name}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    className="object-cover object-center group-hover:scale-106 transition-transform duration-500"
-                  />
+                <div className="relative w-full aspect-[4/3] rounded-2xl bg-cream-50/70 overflow-hidden mb-4 border border-charcoal-border/40 p-3 flex items-center justify-center">
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={cat.imageStem}
+                      alt={cat.name}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-contain object-center group-hover:scale-106 transition-transform duration-500"
+                    />
+                  </div>
                   <span className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm text-brand text-xs font-bold px-3 py-1 rounded-full shadow-xs border border-brand/20">
                     {cat.itemCount} Designs
                   </span>

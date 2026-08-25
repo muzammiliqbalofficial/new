@@ -1,6 +1,7 @@
 ﻿import React from 'react';
 import Link from 'next/link';
-import { Sparkles, Phone, Mail, MapPin, Heart } from 'lucide-react';
+import Image from 'next/image';
+import { Phone, Mail, MapPin, Heart } from 'lucide-react';
 import { Category } from '@/lib/types';
 
 interface Props {
@@ -12,7 +13,7 @@ interface Props {
 
 export default function Footer({
   storeName = 'Tiny Kids',
-  whatsappNumber = '923000000000',
+  whatsappNumber = '923366895035',
   contactEmail = 'info@tinykids.pk',
   categories = [],
 }: Props) {
@@ -24,9 +25,9 @@ export default function Footer({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 pb-12 border-b border-charcoal-light/30">
           {/* Col 1: Store Intro */}
           <div className="space-y-4">
-            <Link href="/" className="flex items-center space-x-2.5">
-              <div className="w-8 h-8 rounded-xl bg-brand flex items-center justify-center text-white">
-                <Sparkles className="w-4 h-4" />
+            <Link href="/" className="flex items-center space-x-3">
+              <div className="relative w-10 h-10 rounded-2xl overflow-hidden shadow-xs bg-white flex-shrink-0">
+                <Image src="/logo.png" alt={storeName} fill className="object-cover" />
               </div>
               <span className="text-xl font-black tracking-tight text-white">{storeName}</span>
             </Link>
@@ -38,10 +39,10 @@ export default function Footer({
                 href={`https://wa.me/${cleanPhone}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center space-x-2 px-3 py-2 bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] text-xs font-semibold rounded-xl transition-colors border border-[#25D366]/30"
+                className="inline-flex items-center space-x-2 px-3.5 py-2 bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] text-xs font-bold rounded-xl transition-colors border border-[#25D366]/30"
               >
                 <Phone className="w-3.5 h-3.5" />
-                <span>WhatsApp Helpline</span>
+                <span>WhatsApp: +92 336 6895035</span>
               </a>
             </div>
           </div>
@@ -97,7 +98,7 @@ export default function Footer({
             <h4 className="text-sm font-bold text-white mb-4 tracking-wider uppercase">Get In Touch</h4>
             <div className="flex items-center space-x-2.5">
               <Phone className="w-4 h-4 text-brand-light flex-shrink-0" />
-              <span>+92 300 0000000 (Mon - Sat)</span>
+              <span>+92 336 6895035 (Mon - Sat)</span>
             </div>
             <div className="flex items-center space-x-2.5">
               <Mail className="w-4 h-4 text-brand-light flex-shrink-0" />

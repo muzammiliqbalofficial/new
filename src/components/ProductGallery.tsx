@@ -60,23 +60,25 @@ export default function ProductGallery({ images, productName }: Props) {
 
   return (
     <div className="flex flex-col space-y-4">
-      {/* Main Image Viewer */}
+      {/* Main Image Viewer with object-contain for full clarity */}
       <div
-        className="relative aspect-square w-full rounded-3xl bg-cream-50 overflow-hidden border border-charcoal-border/80 shadow-soft group"
+        className="relative aspect-square w-full rounded-3xl bg-white p-4 sm:p-6 overflow-hidden border border-charcoal-border/80 shadow-soft group flex items-center justify-center"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <Image
-          src={currentImage.r2_key}
-          alt={`${productName} - Image ${activeIndex + 1}`}
-          fill
-          priority={activeIndex === 0}
-          sizes="(max-width: 768px) 100vw, 50vw"
-          className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
-        />
+        <div className="relative w-full h-full">
+          <Image
+            src={currentImage.r2_key}
+            alt={`${productName} - Image ${activeIndex + 1}`}
+            fill
+            priority={activeIndex === 0}
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className="object-contain object-center transition-transform duration-500 group-hover:scale-105"
+          />
+        </div>
 
         {currentImage.is_white_background && (
-          <span className="absolute top-4 left-4 bg-white/90 backdrop-blur-md text-charcoal text-[11px] font-semibold px-2.5 py-1 rounded-full shadow-sm flex items-center space-x-1 border border-charcoal-border/50">
+          <span className="absolute top-4 left-4 bg-white/95 backdrop-blur-md text-charcoal text-[11px] font-semibold px-2.5 py-1 rounded-full shadow-sm flex items-center space-x-1 border border-charcoal-border/50">
             <Sparkles className="w-3 h-3 text-coral" />
             <span>Studio View</span>
           </span>
@@ -87,14 +89,14 @@ export default function ProductGallery({ images, productName }: Props) {
           <>
             <button
               onClick={handlePrev}
-              className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/80 hover:bg-white text-charcoal shadow-md backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+              className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 hover:bg-white text-charcoal shadow-md backdrop-blur-sm transition-all opacity-80 hover:opacity-100"
               aria-label="Previous product image"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
             <button
               onClick={handleNext}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/80 hover:bg-white text-charcoal shadow-md backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 hover:bg-white text-charcoal shadow-md backdrop-blur-sm transition-all opacity-80 hover:opacity-100"
               aria-label="Next product image"
             >
               <ChevronRight className="w-5 h-5" />
@@ -117,19 +119,21 @@ export default function ProductGallery({ images, productName }: Props) {
             <button
               key={img.id || idx}
               onClick={() => setActiveIndex(idx)}
-              className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden flex-shrink-0 bg-cream-100 transition-all border-2 ${
+              className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden flex-shrink-0 bg-white p-1 transition-all border-2 ${
                 activeIndex === idx
                   ? 'border-brand ring-2 ring-brand/20 scale-95 shadow-sm'
                   : 'border-charcoal-border/60 hover:border-charcoal-muted opacity-80 hover:opacity-100'
               }`}
             >
-              <Image
-                src={img.r2_key}
-                alt={`${productName} thumbnail ${idx + 1}`}
-                fill
-                sizes="80px"
-                className="object-cover object-center"
-              />
+              <div className="relative w-full h-full">
+                <Image
+                  src={img.r2_key}
+                  alt={`${productName} thumbnail ${idx + 1}`}
+                  fill
+                  sizes="80px"
+                  className="object-contain object-center"
+                />
+              </div>
             </button>
           ))}
         </div>
