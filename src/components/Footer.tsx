@@ -31,7 +31,7 @@ export default function Footer({
               <span className="text-xl font-black tracking-tight text-white">{storeName}</span>
             </Link>
             <p className="text-xs text-charcoal-muted leading-relaxed">
-              Premium baby & kids essentials in Pakistan. From newborn welcome starter sets and rompers to nursery accessories — crafted with love and gentle care for your little ones.
+              Premium baby clothing in Pakistan. From newborn welcome starter sets and rompers to winter fleece — crafted with love and gentle care for your little angels.
             </p>
             <div className="pt-1">
               <a
@@ -46,24 +46,17 @@ export default function Footer({
             </div>
           </div>
 
-          {/* Col 2: Top Categories */}
+          {/* Col 2: Top Clothing Collections */}
           <div>
-            <h4 className="text-sm font-bold text-white mb-4 tracking-wider uppercase">Categories</h4>
+            <h4 className="text-sm font-bold text-white mb-4 tracking-wider uppercase">Baby Clothing</h4>
             <ul className="space-y-2 text-xs text-charcoal-muted">
-              {categories.slice(0, 6).map((cat) => (
+              {categories.map((cat) => (
                 <li key={cat.id}>
                   <Link href={`/category/${cat.slug}`} className="hover:text-white transition-colors">
                     {cat.name}
                   </Link>
                 </li>
               ))}
-              {categories.length > 6 && (
-                <li>
-                  <Link href="/" className="text-brand-light hover:text-white font-medium">
-                    View all 37 categories →
-                  </Link>
-                </li>
-              )}
             </ul>
           </div>
 
@@ -116,7 +109,7 @@ export default function Footer({
             </div>
             <div className="mt-4 p-3 rounded-xl bg-white/5 border border-white/10 text-[11px]">
               <span className="text-white font-semibold block mb-0.5">Cash on Delivery Available</span>
-              Pay safely when your parcel arrives at your doorstep.
+              Pay safely in cash when your baby parcel arrives at your doorstep.
             </div>
           </div>
         </div>
