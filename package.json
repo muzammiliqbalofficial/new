@@ -1,26 +1,41 @@
 {
-  "name": "baby-store",
+  "name": "tinykids",
   "version": "1.0.0",
-  "description": "Baby & Kids Products E-Commerce Storefront and Admin Dashboard",
-  "main": "index.js",
+  "private": true,
   "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
     "seed": "tsx scripts/seed.ts",
-    "verify:anon": "tsx scripts/verify-anon.ts"
+    "verify:anon": "tsx scripts/verify-anon.ts",
+    "build:worker": "opennextjs-cloudflare build",
+    "preview:worker": "opennextjs-cloudflare preview",
+    "deploy:worker": "opennextjs-cloudflare deploy"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1002.0",
-    "@supabase/supabase-js": "^2.98.0",
-    "@types/node": "^25.3.0",
-    "@types/pg": "^8.16.0",
-    "@types/sharp": "^0.31.1",
-    "dotenv": "^17.4.4",
-    "pg": "^8.18.0",
-    "sharp": "^0.34.5",
-    "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "@aws-sdk/client-s3": "^3.714.0",
+    "@supabase/supabase-js": "^2.47.10",
+    "clsx": "^2.1.1",
+    "dotenv": "^16.4.7",
+    "lucide-react": "^0.469.0",
+    "minisearch": "^7.1.1",
+    "next": "^15.1.7",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sharp": "^0.33.5",
+    "tailwind-merge": "^2.6.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "devDependencies": {
+    "@opennextjs/cloudflare": "^1.20.2",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "wrangler": "^4.86.0"
   }
 }
