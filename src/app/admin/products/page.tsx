@@ -17,7 +17,12 @@ import {
   Sparkles,
   AlertTriangle,
 } from 'lucide-react';
-import { supabaseAdmin as supabase } from '@/lib/supabase';
+import {
+  getAdminProducts,
+  getAdminCategories,
+  updateAdminProduct,
+  deleteAdminProduct,
+} from '@/lib/admin-api';
 import { Product, Category } from '@/lib/types';
 import { formatPrice, resolveMainImage } from '@/lib/formatters';
 
@@ -47,47 +52,12 @@ export default function AdminProductsPage() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      // 1. Fetch categories
-      const { data: cats } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('is_visible', true)
-        .order('sort_order', { ascending: true });
+      const [cats, prods] = await Promise.all([
+        getAdminCategories(),
+        getAdminProducts(),
+      ]);
+
       setCategories(cats || []);
-
-      // 2. Fetch products
-      const { data: prods, error: prodErr } = await supabase
-        .from('products')
-        .select(
-          `
-          id,
-          slug,
-          name,
-          price,
-          sale_price,
-          stock,
-          is_published,
-          category_id,
-          categories (
-            id,
-            name,
-            slug
-          ),
-          product_images (
-            id,
-            r2_key,
-            is_primary,
-            is_white_background,
-            is_description_image
-          )
-        `
-        )
-        .order('created_at', { ascending: false });
-
-      if (prodErr) {
-        console.error('Products load error:', prodErr);
-      }
-
       const prodList = (prods || []) as unknown as Product[];
       setProducts(prodList);
       setFilteredProducts(prodList);
@@ -120,8 +90,8 @@ export default function AdminProductsPage() {
         const catObj: any = p.categories;
         const catName = Array.isArray(catObj) ? catObj[0]?.name : catObj?.name;
         return (
-          p.name.toLowerCase().includes(q) ||
-          p.slug.toLowerCase().includes(q) ||
+          (p.name && p.name.toLowerCase().includes(q)) ||
+          (p.slug && p.slug.toLowerCase().includes(q)) ||
           (catName && catName.toLowerCase().includes(q))
         );
       });
@@ -164,9 +134,8 @@ export default function AdminProductsPage() {
         payload.category_id = editFormData.category_id;
       }
 
-      await supabase.from('products').update(payload).eq('id', editingProduct.id);
+      await updateAdminProduct(editingProduct.id, payload);
 
-      // Update local state
       setProducts((prev) =>
         prev.map((p) => {
           if (p.id === editingProduct.id) {
@@ -174,7 +143,9 @@ export default function AdminProductsPage() {
             return {
               ...p,
               ...payload,
-              categories: matchedCat ? { id: matchedCat.id, name: matchedCat.name, slug: matchedCat.slug } : p.categories,
+              categories: matchedCat
+                ? { id: matchedCat.id, name: matchedCat.name, slug: matchedCat.slug }
+                : p.categories,
             };
           }
           return p;
@@ -193,7 +164,7 @@ export default function AdminProductsPage() {
   const handleDeleteProduct = async () => {
     if (!deletingProduct) return;
     try {
-      await supabase.from('products').delete().eq('id', deletingProduct.id);
+      await deleteAdminProduct(deletingProduct.id);
       setProducts((prev) => prev.filter((p) => p.id !== deletingProduct.id));
       setDeletingProduct(null);
     } catch (err) {
@@ -205,7 +176,7 @@ export default function AdminProductsPage() {
   const handleToggleVisibility = async (p: Product) => {
     const nextState = !p.is_published;
     setProducts((prev) => prev.map((item) => (item.id === p.id ? { ...item, is_published: nextState } : item)));
-    await supabase.from('products').update({ is_published: nextState }).eq('id', p.id);
+    await updateAdminProduct(p.id, { is_published: nextState });
   };
 
   return (
@@ -272,113 +243,125 @@ export default function AdminProductsPage() {
 
       {/* Products Table */}
       <div className="bg-white rounded-3xl border border-charcoal-border/70 shadow-soft overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="bg-cream-100/70 border-b border-charcoal-border/60 text-charcoal-muted uppercase text-[10px] tracking-wider font-bold">
-                <th className="py-3.5 px-4">Item</th>
-                <th className="py-3.5 px-4">Category</th>
-                <th className="py-3.5 px-4">Selling Price</th>
-                <th className="py-3.5 px-4">Original Price</th>
-                <th className="py-3.5 px-4">Stock</th>
-                <th className="py-3.5 px-4 text-center">Status</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-charcoal-border/40 text-charcoal font-medium">
-              {filteredProducts.map((p) => {
-                const imageStem = resolveMainImage(p);
-                const catObj: any = p.categories;
-                const catName = Array.isArray(catObj) ? catObj[0]?.name : catObj?.name || 'Uncategorized';
-                return (
-                  <tr key={p.id} className="hover:bg-cream-50/50 transition-colors">
-                    {/* Item Image + Title */}
-                    <td className="py-3.5 px-4 max-w-sm">
-                      <div className="flex items-center space-x-3">
-                        <div className="relative w-12 h-12 rounded-xl bg-cream-50 overflow-hidden flex-shrink-0 border border-charcoal-border/40 p-1">
-                          <Image
-                            src={imageStem}
-                            alt={p.name}
-                            fill
-                            sizes="48px"
-                            className="object-contain object-center"
-                          />
+        {isLoading ? (
+          <div className="py-20 text-center space-y-3">
+            <RefreshCw className="w-8 h-8 animate-spin text-brand mx-auto" />
+            <p className="text-xs text-charcoal-muted font-bold">Loading products catalog...</p>
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="py-20 text-center space-y-3">
+            <Package className="w-10 h-10 text-charcoal-muted mx-auto" />
+            <h3 className="text-base font-black text-charcoal">No Products Found</h3>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-cream-100/70 border-b border-charcoal-border/60 text-charcoal-muted uppercase text-[10px] tracking-wider font-bold">
+                  <th className="py-3.5 px-4">Item</th>
+                  <th className="py-3.5 px-4">Category</th>
+                  <th className="py-3.5 px-4">Selling Price</th>
+                  <th className="py-3.5 px-4">Original Price</th>
+                  <th className="py-3.5 px-4">Stock</th>
+                  <th className="py-3.5 px-4 text-center">Status</th>
+                  <th className="py-3.5 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-charcoal-border/40 text-charcoal font-medium">
+                {filteredProducts.map((p) => {
+                  const imageStem = resolveMainImage(p);
+                  const catObj: any = p.categories;
+                  const catName = Array.isArray(catObj) ? catObj[0]?.name : catObj?.name || 'Uncategorized';
+                  return (
+                    <tr key={p.id} className="hover:bg-cream-50/50 transition-colors">
+                      {/* Item Image + Title */}
+                      <td className="py-3.5 px-4 max-w-sm">
+                        <div className="flex items-center space-x-3">
+                          <div className="relative w-12 h-12 rounded-xl bg-cream-50 overflow-hidden flex-shrink-0 border border-charcoal-border/40 p-1">
+                            <Image
+                              src={imageStem}
+                              alt={p.name}
+                              fill
+                              sizes="48px"
+                              className="object-contain object-center"
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <span className="font-bold text-xs text-charcoal line-clamp-1 block">{p.name}</span>
+                            <span className="text-[10px] text-charcoal-muted truncate block">{p.slug}</span>
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <span className="font-bold text-xs text-charcoal line-clamp-1 block">{p.name}</span>
-                          <span className="text-[10px] text-charcoal-muted truncate block">{p.slug}</span>
-                        </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* Category */}
-                    <td className="py-3.5 px-4">
-                      <span className="px-2.5 py-1 rounded-full bg-cream-100 text-charcoal text-[11px] font-semibold">
-                        {catName}
-                      </span>
-                    </td>
+                      {/* Category */}
+                      <td className="py-3.5 px-4">
+                        <span className="px-2.5 py-1 rounded-full bg-cream-100 text-charcoal text-[11px] font-semibold">
+                          {catName}
+                        </span>
+                      </td>
 
-                    {/* Price */}
-                    <td className="py-3.5 px-4 font-black text-xs sm:text-sm text-charcoal">
-                      {formatPrice(p.price)}
-                    </td>
+                      {/* Price */}
+                      <td className="py-3.5 px-4 font-black text-xs sm:text-sm text-charcoal">
+                        {formatPrice(p.price)}
+                      </td>
 
-                    {/* Original Sale Price */}
-                    <td className="py-3.5 px-4 text-xs text-charcoal-muted line-through">
-                      {p.sale_price && p.sale_price > (p.price || 0) ? formatPrice(p.sale_price) : '—'}
-                    </td>
+                      {/* Original Sale Price */}
+                      <td className="py-3.5 px-4 text-xs text-charcoal-muted line-through">
+                        {p.sale_price && p.sale_price > (p.price || 0) ? formatPrice(p.sale_price) : '—'}
+                      </td>
 
-                    {/* Stock */}
-                    <td className="py-3.5 px-4">
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
-                          p.stock > 0
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : 'bg-rose-100 text-rose-800'
-                        }`}
-                      >
-                        {p.stock > 0 ? `${p.stock} in stock` : 'Out of stock'}
-                      </span>
-                    </td>
+                      {/* Stock */}
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                            p.stock > 0
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : 'bg-rose-100 text-rose-800'
+                          }`}
+                        >
+                          {p.stock > 0 ? `${p.stock} in stock` : 'Out of stock'}
+                        </span>
+                      </td>
 
-                    {/* Published Toggle */}
-                    <td className="py-3.5 px-4 text-center">
-                      <button
-                        onClick={() => handleToggleVisibility(p)}
-                        className={`p-1.5 rounded-xl border transition-colors ${
-                          p.is_published
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                            : 'bg-charcoal-border/40 text-charcoal-muted border-charcoal-border'
-                        }`}
-                        title={p.is_published ? 'Visible on website' : 'Hidden from website'}
-                      >
-                        {p.is_published ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                      </button>
-                    </td>
+                      {/* Published Toggle */}
+                      <td className="py-3.5 px-4 text-center">
+                        <button
+                          onClick={() => handleToggleVisibility(p)}
+                          className={`p-1.5 rounded-xl border transition-colors ${
+                            p.is_published
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                              : 'bg-charcoal-border/40 text-charcoal-muted border-charcoal-border'
+                          }`}
+                          title={p.is_published ? 'Visible on website' : 'Hidden from website'}
+                        >
+                          {p.is_published ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                        </button>
+                      </td>
 
-                    {/* Actions */}
-                    <td className="py-3.5 px-4 text-right space-x-1 whitespace-nowrap">
-                      <button
-                        onClick={() => handleOpenEdit(p)}
-                        className="p-1.5 bg-cream-100 hover:bg-cream-200 text-charcoal rounded-xl transition-colors"
-                        title="Edit Product"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => setDeletingProduct(p)}
-                        className="p-1.5 bg-coral/10 hover:bg-coral/20 text-coral rounded-xl transition-colors"
-                        title="Delete Product"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                      {/* Actions */}
+                      <td className="py-3.5 px-4 text-right space-x-1 whitespace-nowrap">
+                        <button
+                          onClick={() => handleOpenEdit(p)}
+                          className="p-1.5 bg-cream-100 hover:bg-cream-200 text-charcoal rounded-xl transition-colors"
+                          title="Edit Product"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setDeletingProduct(p)}
+                          className="p-1.5 bg-coral/10 hover:bg-coral/20 text-coral rounded-xl transition-colors"
+                          title="Delete Product"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Edit Product Modal */}

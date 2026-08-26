@@ -16,7 +16,7 @@ import {
   AlertCircle,
   MessageCircle,
 } from 'lucide-react';
-import { supabaseAdmin as supabase } from '@/lib/supabase';
+import { getAdminOrders, setOrderStatus } from '@/lib/admin-api';
 import { formatPrice } from '@/lib/formatters';
 
 interface OrderItem {
@@ -65,18 +65,9 @@ export default function AdminOrdersPage() {
   const loadOrders = async () => {
     setIsLoading(true);
     try {
-      // Fetch from Supabase
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*, order_items(*)')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.warn('Database orders query warning:', error);
-      }
-
-      // Check localStorage for offline/client fallback test orders
+      const data = await getAdminOrders();
       let combinedOrders = (data || []) as Order[];
+
       if (typeof window !== 'undefined') {
         const local = localStorage.getItem('tk_last_order');
         if (local) {
@@ -114,10 +105,10 @@ export default function AdminOrdersPage() {
       const q = searchQuery.toLowerCase();
       result = result.filter(
         (o) =>
-          o.order_number.toLowerCase().includes(q) ||
-          o.customer_name.toLowerCase().includes(q) ||
-          o.customer_phone.includes(q) ||
-          o.city.toLowerCase().includes(q)
+          (o.order_number && o.order_number.toLowerCase().includes(q)) ||
+          (o.customer_name && o.customer_name.toLowerCase().includes(q)) ||
+          (o.customer_phone && o.customer_phone.includes(q)) ||
+          (o.city && o.city.toLowerCase().includes(q))
       );
     }
 
@@ -128,14 +119,14 @@ export default function AdminOrdersPage() {
   const handleStatusChange = async (orderId: string, newStatus: Order['status']) => {
     setIsUpdatingStatus(orderId);
     try {
-      await supabase.from('orders').update({ status: newStatus }).eq('id', orderId);
-
-      // Update state locally
-      setOrders((prev) =>
-        prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
-      );
-      if (selectedOrder && selectedOrder.id === orderId) {
-        setSelectedOrder((prev) => (prev ? { ...prev, status: newStatus } : null));
+      const ok = await setOrderStatus(orderId, newStatus);
+      if (ok) {
+        setOrders((prev) =>
+          prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
+        );
+        if (selectedOrder && selectedOrder.id === orderId) {
+          setSelectedOrder((prev) => (prev ? { ...prev, status: newStatus } : null));
+        }
       }
     } catch (err) {
       console.error('Failed to update status:', err);
@@ -146,14 +137,14 @@ export default function AdminOrdersPage() {
 
   // WhatsApp Customer message trigger
   const generateCustomerWhatsAppLink = (order: Order) => {
-    const cleanPhone = order.customer_phone.replace(/[^0-9]/g, '');
+    const cleanPhone = (order.customer_phone || '').replace(/[^0-9]/g, '');
     const phone = cleanPhone.startsWith('0') ? `92${cleanPhone.slice(1)}` : cleanPhone;
-    const msg = `Assalam o Alaikum ${order.customer_name}! 👶\n\nThank you for ordering with *Tiny Kids* (Order #${order.order_number}).\nTotal Amount: *${formatPrice(order.total)}* (Cash on Delivery).\n\nYour order is currently *${order.status.toUpperCase()}*. We will deliver to your address: ${order.address}, ${order.city}.\n\nFor any questions, feel free to reply! ✨`;
+    const msg = `Assalam o Alaikum ${order.customer_name}! 👶\n\nThank you for ordering with *Tiny Kids* (Order #${order.order_number}).\nTotal Amount: *${formatPrice(order.total)}* (Cash on Delivery).\n\nYour order is currently *${(order.status || 'NEW').toUpperCase()}*. We will deliver to your address: ${order.address}, ${order.city}.\n\nFor any questions, feel free to reply! ✨`;
     return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
   };
 
   // Metrics
-  const totalRevenue = orders.reduce((sum, o) => sum + (o.status !== 'cancelled' ? o.total : 0), 0);
+  const totalRevenue = orders.reduce((sum, o) => sum + (o.status !== 'cancelled' ? Number(o.total) || 0 : 0), 0);
   const newOrdersCount = orders.filter((o) => o.status === 'new').length;
   const dispatchedCount = orders.filter((o) => o.status === 'shipped' || o.status === 'confirmed').length;
 
@@ -164,7 +155,7 @@ export default function AdminOrdersPage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-charcoal tracking-tight">Customer Orders</h1>
           <p className="text-xs sm:text-sm text-charcoal-muted mt-0.5">
-            Manage incoming Cash on Delivery orders & customer dispatches
+            Manage incoming Cash on Delivery orders & customer dispatches ({orders.length} total)
           </p>
         </div>
         <button
@@ -180,54 +171,54 @@ export default function AdminOrdersPage() {
       {/* Metrics Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-2xl p-4 sm:p-5 border border-charcoal-border/70 shadow-soft">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-charcoal-muted uppercase">Total Orders</span>
-            <div className="w-8 h-8 rounded-xl bg-brand-soft text-brand flex items-center justify-center">
+          <div className="flex items-center justify-between text-charcoal-muted mb-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider">Total Orders</span>
+            <div className="p-2 rounded-xl bg-brand-soft text-brand">
               <ShoppingBag className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-black text-charcoal mt-2">{orders.length}</div>
-          <span className="text-[11px] text-charcoal-muted">All-time store orders</span>
+          <span className="text-2xl sm:text-3xl font-black text-charcoal">{orders.length}</span>
+          <span className="text-[10px] text-charcoal-muted block mt-1">All-time store orders</span>
         </div>
 
         <div className="bg-white rounded-2xl p-4 sm:p-5 border border-charcoal-border/70 shadow-soft">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-amber-700 uppercase">New / Pending</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+          <div className="flex items-center justify-between text-amber-700 mb-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider">New / Pending</span>
+            <div className="p-2 rounded-xl bg-amber-100 text-amber-800">
               <Clock className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-black text-charcoal mt-2">{newOrdersCount}</div>
-          <span className="text-[11px] text-amber-600 font-semibold">Requires confirmation</span>
+          <span className="text-2xl sm:text-3xl font-black text-charcoal">{newOrdersCount}</span>
+          <span className="text-[10px] text-amber-700 font-semibold block mt-1">Requires confirmation</span>
         </div>
 
         <div className="bg-white rounded-2xl p-4 sm:p-5 border border-charcoal-border/70 shadow-soft">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-purple-700 uppercase">In Progress</span>
-            <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center">
+          <div className="flex items-center justify-between text-purple-700 mb-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider">In Progress</span>
+            <div className="p-2 rounded-xl bg-purple-100 text-purple-800">
               <Truck className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-black text-charcoal mt-2">{dispatchedCount}</div>
-          <span className="text-[11px] text-purple-600 font-semibold">Confirmed / Shipped</span>
+          <span className="text-2xl sm:text-3xl font-black text-charcoal">{dispatchedCount}</span>
+          <span className="text-[10px] text-purple-700 font-semibold block mt-1">Confirmed / Shipped</span>
         </div>
 
         <div className="bg-white rounded-2xl p-4 sm:p-5 border border-charcoal-border/70 shadow-soft">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-emerald-700 uppercase">Total Sales</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+          <div className="flex items-center justify-between text-emerald-700 mb-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider">Total Sales</span>
+            <div className="p-2 rounded-xl bg-emerald-100 text-emerald-800">
               <CheckCircle className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-black text-charcoal mt-2">{formatPrice(totalRevenue)}</div>
-          <span className="text-[11px] text-emerald-600 font-semibold">Gross order value</span>
+          <span className="text-xl sm:text-2xl font-black text-emerald-700">{formatPrice(totalRevenue)}</span>
+          <span className="text-[10px] text-charcoal-muted block mt-1">Gross order value</span>
         </div>
       </div>
 
-      {/* Filter & Search Controls */}
+      {/* Filter Tabs & Search */}
       <div className="bg-white rounded-2xl p-4 border border-charcoal-border/70 shadow-soft flex flex-col sm:flex-row gap-3 items-center justify-between">
         {/* Search */}
-        <div className="relative w-full sm:w-72">
+        <div className="relative w-full sm:w-80">
           <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-charcoal-muted" />
           <input
             type="text"
@@ -238,19 +229,19 @@ export default function AdminOrdersPage() {
           />
         </div>
 
-        {/* Status Pills */}
-        <div className="flex space-x-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 scrollbar-none">
+        {/* Status Filter Buttons */}
+        <div className="flex items-center space-x-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 scrollbar-none">
           {['all', 'new', 'confirmed', 'shipped', 'delivered', 'cancelled'].map((st) => (
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold capitalize transition-colors whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold capitalize transition-all ${
                 statusFilter === st
                   ? 'bg-charcoal text-white shadow-xs'
-                  : 'bg-cream-100 text-charcoal-light hover:bg-cream-200'
+                  : 'bg-cream-100 text-charcoal-light hover:bg-cream-200 hover:text-charcoal'
               }`}
             >
-              {st}
+              {st === 'all' ? 'All' : st}
             </button>
           ))}
         </div>
@@ -258,12 +249,17 @@ export default function AdminOrdersPage() {
 
       {/* Orders Table */}
       <div className="bg-white rounded-3xl border border-charcoal-border/70 shadow-soft overflow-hidden">
-        {filteredOrders.length === 0 ? (
-          <div className="p-12 text-center space-y-3">
+        {isLoading ? (
+          <div className="py-20 text-center space-y-3">
+            <RefreshCw className="w-8 h-8 animate-spin text-brand mx-auto" />
+            <p className="text-xs text-charcoal-muted font-bold">Loading live store orders...</p>
+          </div>
+        ) : filteredOrders.length === 0 ? (
+          <div className="py-20 text-center space-y-3">
             <ShoppingBag className="w-10 h-10 text-charcoal-muted mx-auto" />
-            <h3 className="text-base font-bold text-charcoal">No orders found</h3>
+            <h3 className="text-base font-black text-charcoal">No Orders Found</h3>
             <p className="text-xs text-charcoal-muted max-w-sm mx-auto">
-              Customer orders placed on the storefront will appear right here in real time.
+              New customer orders will appear here automatically when placed through the website.
             </p>
           </div>
         ) : (
@@ -271,10 +267,10 @@ export default function AdminOrdersPage() {
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="bg-cream-100/70 border-b border-charcoal-border/60 text-charcoal-muted uppercase text-[10px] tracking-wider font-bold">
-                  <th className="py-3.5 px-4">Order Ref</th>
+                  <th className="py-3.5 px-4">Order #</th>
                   <th className="py-3.5 px-4">Customer</th>
-                  <th className="py-3.5 px-4">City & Address</th>
-                  <th className="py-3.5 px-4">Amount</th>
+                  <th className="py-3.5 px-4">City / Area</th>
+                  <th className="py-3.5 px-4">Total Amount</th>
                   <th className="py-3.5 px-4">Status</th>
                   <th className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
@@ -283,37 +279,32 @@ export default function AdminOrdersPage() {
                 {filteredOrders.map((order) => {
                   const badge = STATUS_BADGES[order.status] || STATUS_BADGES.new;
                   return (
-                    <tr key={order.id || order.order_number} className="hover:bg-cream-50/50 transition-colors">
-                      {/* Order Ref & Date */}
+                    <tr key={order.id} className="hover:bg-cream-50/50 transition-colors">
+                      {/* Order Number & Date */}
                       <td className="py-3.5 px-4">
-                        <span className="font-black text-brand text-xs block">{order.order_number}</span>
+                        <span className="font-bold text-xs text-charcoal block">{order.order_number}</span>
                         <span className="text-[10px] text-charcoal-muted block">
-                          {new Date(order.created_at || Date.now()).toLocaleDateString('en-PK', {
-                            month: 'short',
+                          {order.created_at ? new Date(order.created_at).toLocaleDateString('en-PK', {
                             day: 'numeric',
+                            month: 'short',
                             hour: '2-digit',
                             minute: '2-digit',
-                          })}
+                          }) : 'Just now'}
                         </span>
                       </td>
 
-                      {/* Customer Info */}
+                      {/* Customer Details */}
                       <td className="py-3.5 px-4">
-                        <span className="font-bold block text-charcoal">{order.customer_name}</span>
-                        <a
-                          href={`tel:${order.customer_phone}`}
-                          className="text-xs text-charcoal-light hover:text-brand flex items-center space-x-1"
-                        >
-                          <Phone className="w-3 h-3 text-charcoal-muted inline" />
-                          <span>{order.customer_phone}</span>
-                        </a>
+                        <span className="font-bold text-xs text-charcoal block">{order.customer_name}</span>
+                        <span className="text-[10px] text-charcoal-muted block font-mono">
+                          {order.customer_phone}
+                        </span>
                       </td>
 
-                      {/* City & Address */}
-                      <td className="py-3.5 px-4 max-w-xs">
-                        <span className="font-bold text-xs text-charcoal block">{order.city}</span>
-                        <span className="text-[11px] text-charcoal-muted truncate block max-w-xs">
-                          {order.address}
+                      {/* Destination City */}
+                      <td className="py-3.5 px-4">
+                        <span className="px-2 py-0.5 rounded-full bg-cream-100 text-charcoal text-[11px] font-semibold">
+                          {order.city}
                         </span>
                       </td>
 
