@@ -41,7 +41,7 @@ export default function SearchModal({ isOpen, onClose }: Props) {
 
     if (!miniSearchRef.current) {
       setIsLoading(true);
-      fetch('/api/search-index')
+      fetch('/search-index.json')
         .then((res) => res.json())
         .then((data: SearchDoc[]) => {
           const ms = new MiniSearch<SearchDoc>({

@@ -17,7 +17,7 @@ function SearchPageContent() {
   const [miniSearch, setMiniSearch] = useState<MiniSearch | null>(null);
 
   useEffect(() => {
-    fetch('/api/search-index')
+    fetch('/search-index.json')
       .then((res) => res.json())
       .then((docs) => {
         const ms = new MiniSearch({
