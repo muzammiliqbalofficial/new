@@ -56,7 +56,7 @@ export default function AdminProductsPage() {
       setCategories(cats || []);
 
       // 2. Fetch products
-      const { data: prods } = await supabase
+      const { data: prods, error: prodErr } = await supabase
         .from('products')
         .select(
           `
@@ -84,6 +84,10 @@ export default function AdminProductsPage() {
         )
         .order('created_at', { ascending: false });
 
+      if (prodErr) {
+        console.error('Products load error:', prodErr);
+      }
+
       const prodList = (prods || []) as unknown as Product[];
       setProducts(prodList);
       setFilteredProducts(prodList);
@@ -103,17 +107,24 @@ export default function AdminProductsPage() {
     let list = [...products];
 
     if (categoryFilter !== 'all') {
-      list = list.filter((p) => p.categories?.id === categoryFilter);
+      list = list.filter((p) => {
+        const catObj: any = p.categories;
+        const catId = Array.isArray(catObj) ? catObj[0]?.id : catObj?.id;
+        return catId === categoryFilter || p.category_id === categoryFilter;
+      });
     }
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      list = list.filter(
-        (p) =>
+      list = list.filter((p) => {
+        const catObj: any = p.categories;
+        const catName = Array.isArray(catObj) ? catObj[0]?.name : catObj?.name;
+        return (
           p.name.toLowerCase().includes(q) ||
           p.slug.toLowerCase().includes(q) ||
-          p.categories?.name.toLowerCase().includes(q)
-      );
+          (catName && catName.toLowerCase().includes(q))
+        );
+      });
     }
 
     setFilteredProducts(list);
@@ -122,12 +133,14 @@ export default function AdminProductsPage() {
   // Open Edit Modal
   const handleOpenEdit = (p: Product) => {
     setEditingProduct(p);
+    const catObj: any = p.categories;
+    const catId = Array.isArray(catObj) ? catObj[0]?.id : catObj?.id;
     setEditFormData({
       name: p.name,
       price: p.price || 0,
       sale_price: p.sale_price || 0,
       stock: p.stock || 0,
-      category_id: p.categories?.id || '',
+      category_id: catId || p.category_id || '',
       is_published: p.is_published,
     });
   };
@@ -202,7 +215,7 @@ export default function AdminProductsPage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-charcoal tracking-tight">Products Catalog</h1>
           <p className="text-xs sm:text-sm text-charcoal-muted mt-0.5">
-            Manage your baby clothing collection, update prices, and stock counts
+            Manage your baby clothing collection, update prices, and stock counts ({products.length} total)
           </p>
         </div>
 
@@ -275,6 +288,8 @@ export default function AdminProductsPage() {
             <tbody className="divide-y divide-charcoal-border/40 text-charcoal font-medium">
               {filteredProducts.map((p) => {
                 const imageStem = resolveMainImage(p);
+                const catObj: any = p.categories;
+                const catName = Array.isArray(catObj) ? catObj[0]?.name : catObj?.name || 'Uncategorized';
                 return (
                   <tr key={p.id} className="hover:bg-cream-50/50 transition-colors">
                     {/* Item Image + Title */}
@@ -299,7 +314,7 @@ export default function AdminProductsPage() {
                     {/* Category */}
                     <td className="py-3.5 px-4">
                       <span className="px-2.5 py-1 rounded-full bg-cream-100 text-charcoal text-[11px] font-semibold">
-                        {p.categories?.name || 'Uncategorized'}
+                        {catName}
                       </span>
                     </td>
 
