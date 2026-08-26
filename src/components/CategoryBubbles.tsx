@@ -15,34 +15,34 @@ const CATEGORIES: BubbleCategory[] = [
   {
     title: 'Starter Sets',
     slug: 'newborn-starter-sets',
-    image: 'https://pub-4327055644f945ce92583334944f4675.r2.dev/496335818-1-1df0f6c5-700w.webp',
+    image: 'https://pub-4327055644f945ce92583334944f4675.r2.dev/638036604-1-14a7c588-700w.webp',
     badge: 'Popular',
   },
   {
     title: 'Rompers',
     slug: 'bodysuits-rompers',
-    image: 'https://pub-4327055644f945ce92583334944f4675.r2.dev/521743516-1-d6ae93bc-700w.webp',
+    image: 'https://pub-4327055644f945ce92583334944f4675.r2.dev/649530987-1-8329c9f1-700w.webp',
     badge: 'Must-Have',
   },
   {
     title: 'Baby Dresses',
     slug: 'baby-dresses-frocks',
-    image: 'https://pub-4327055644f945ce92583334944f4675.r2.dev/533319084-1-8f4b008d-700w.webp',
+    image: 'https://pub-4327055644f945ce92583334944f4675.r2.dev/620053065-1-4cc74d34-700w.webp',
   },
   {
     title: 'Sweaters & Fleece',
     slug: 'sweaters-winter-fleece',
-    image: 'https://pub-4327055644f945ce92583334944f4675.r2.dev/496351052-1-87224215-700w.webp',
+    image: 'https://pub-4327055644f945ce92583334944f4675.r2.dev/597227883-1-a04a41fc-700w.webp',
   },
   {
     title: 'Caps & Booties',
     slug: 'baby-caps-hats-socks',
-    image: 'https://pub-4327055644f945ce92583334944f4675.r2.dev/524888769-1-e4070a7b-700w.webp',
+    image: 'https://pub-4327055644f945ce92583334944f4675.r2.dev/508238134-1-8fc70a00-700w.webp',
   },
   {
     title: 'Tops & Sets',
     slug: 'tops-bottoms',
-    image: 'https://pub-4327055644f945ce92583334944f4675.r2.dev/532392500-1-6d0e9803-700w.webp',
+    image: 'https://pub-4327055644f945ce92583334944f4675.r2.dev/1947660058-1-58fec28e-700w.webp',
   },
 ];
 
@@ -60,10 +60,10 @@ export default function CategoryBubbles() {
             </h2>
           </div>
           <Link
-            href="/category/newborn-starter-sets"
+            href="/products"
             className="text-xs font-bold text-brand hover:text-brand-dark transition-colors"
           >
-            View All →
+            All Products →
           </Link>
         </div>
 

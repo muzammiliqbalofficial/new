@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Phone, Mail, MapPin, MessageCircle, Heart, ShieldCheck, Truck } from 'lucide-react';
+import { Phone, Mail, MapPin, MessageCircle, ShieldCheck, Truck } from 'lucide-react';
 
 const CITIES = [
   'Karachi',
@@ -26,7 +26,7 @@ export default function Footer() {
   return (
     <footer className="bg-charcoal text-white pt-12 sm:pt-16 pb-8 border-t border-charcoal-light/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        {/* Main 4-Column Grid */}
+        {/* Main Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Brand Info */}
           <div className="lg:col-span-2 space-y-4">
@@ -60,6 +60,11 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-xs text-charcoal-muted">
               <li>
+                <Link href="/products" className="hover:text-white transition-colors font-bold text-brand-light">
+                  All Products
+                </Link>
+              </li>
+              <li>
                 <Link href="/category/newborn-starter-sets" className="hover:text-white transition-colors">
                   Newborn Starter Sets & Packs
                 </Link>
@@ -82,11 +87,6 @@ export default function Footer() {
               <li>
                 <Link href="/category/baby-caps-hats-socks" className="hover:text-white transition-colors">
                   Caps, Mittens & Booties
-                </Link>
-              </li>
-              <li>
-                <Link href="/category/tops-bottoms" className="hover:text-white transition-colors">
-                  Tops & Pajama Sets
                 </Link>
               </li>
             </ul>
@@ -116,11 +116,6 @@ export default function Footer() {
               <li>
                 <Link href="/privacy" className="hover:text-white transition-colors">
                   Privacy Policy & Terms
-                </Link>
-              </li>
-              <li>
-                <Link href="/admin/login" className="hover:text-brand-light transition-colors font-bold">
-                  Client Admin Portal
                 </Link>
               </li>
             </ul>

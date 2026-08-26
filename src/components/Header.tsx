@@ -3,161 +3,184 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingBag, Search, Menu, Phone, X } from 'lucide-react';
-import { useCart } from '@/context/CartContext';
+import { usePathname } from 'next/navigation';
+import { ShoppingBag, Search, Menu, X, Phone, Heart, Sparkles, Truck } from 'lucide-react';
+import AnnouncementBar from './AnnouncementBar';
 import SearchModal from './SearchModal';
-import { Category } from '@/lib/types';
+import { useCart } from '@/context/CartContext';
 
-interface Props {
-  storeName?: string;
-  whatsappNumber?: string;
-  categories?: Category[];
-}
+const NAV_LINKS = [
+  { name: 'All Products', href: '/products', badge: '🔥' },
+  { name: 'Starter Sets', href: '/category/newborn-starter-sets' },
+  { name: 'Rompers', href: '/category/bodysuits-rompers' },
+  { name: 'Dresses', href: '/category/baby-dresses-frocks' },
+  { name: 'Sweaters', href: '/category/sweaters-winter-fleece' },
+  { name: 'Caps & Booties', href: '/category/baby-caps-hats-socks' },
+];
 
-export default function Header({
-  storeName = 'Tiny Kids',
-  whatsappNumber = '923366895035',
-  categories = [],
-}: Props) {
+export default function Header() {
+  const pathname = usePathname();
   const { totalItems, openDrawer } = useCart();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const cleanPhone = whatsappNumber.replace(/[^0-9]/g, '');
 
   return (
-    <>
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-charcoal-border/70 shadow-soft">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 sm:h-20">
-            {/* Mobile Menu & Search trigger */}
-            <div className="flex items-center space-x-2 lg:hidden">
-              <button
-                onClick={() => setIsMobileMenuOpen(true)}
-                className="p-2 text-charcoal hover:text-brand transition-colors rounded-xl hover:bg-cream-100"
-                aria-label="Open categories menu"
-              >
-                <Menu className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => setIsSearchOpen(true)}
-                className="p-2 text-charcoal hover:text-brand transition-colors rounded-xl hover:bg-cream-100"
-                aria-label="Search store"
-              >
-                <Search className="w-5 h-5" />
-              </button>
-            </div>
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-charcoal-border/70 shadow-xs">
+      <AnnouncementBar />
 
-            {/* Brand Logo / Store Name */}
-            <div className="flex items-center">
-              <Link href="/" className="flex items-center space-x-3 group">
-                <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-2xl overflow-hidden shadow-xs border border-charcoal-border/50 bg-white flex-shrink-0">
-                  <Image
-                    src="/logo.png"
-                    alt={`${storeName} Logo`}
-                    fill
-                    sizes="48px"
-                    className="object-cover group-hover:scale-105 transition-transform"
-                    priority
-                  />
-                </div>
-                <div>
-                  <span className="text-lg sm:text-2xl font-black tracking-tight text-charcoal group-hover:text-brand transition-colors font-sans block">
-                    {storeName}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 sm:h-20 gap-4">
+          {/* Mobile Menu Button */}
+          <div className="flex items-center lg:hidden">
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="p-2 rounded-2xl text-charcoal hover:bg-cream-100 transition-colors"
+              aria-label="Open menu"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Brand Logo & Name */}
+          <div className="flex items-center">
+            <Link href="/" className="flex items-center space-x-3 group">
+              <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-2xl overflow-hidden bg-white shadow-soft border border-charcoal-border/60 transition-transform group-hover:scale-105">
+                <Image src="/logo.png" alt="Tiny Kids Pakistan Logo" fill className="object-cover" priority />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-black text-lg sm:text-2xl text-charcoal tracking-tight leading-none group-hover:text-brand transition-colors">
+                  Tiny Kids<span className="text-coral">™</span>
+                </span>
+                <span className="text-[10px] text-charcoal-muted font-bold tracking-wider uppercase mt-0.5">
+                  Baby Clothes Pakistan
+                </span>
+              </div>
+            </Link>
+          </div>
+
+          {/* Desktop Navigation Links */}
+          <nav className="hidden lg:flex items-center space-x-1">
+            {NAV_LINKS.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`px-3.5 py-2 rounded-2xl text-xs font-bold transition-all relative ${
+                    isActive
+                      ? 'text-brand bg-brand-soft shadow-xs'
+                      : 'text-charcoal-light hover:text-charcoal hover:bg-cream-100'
+                  }`}
+                >
+                  <span className="flex items-center space-x-1">
+                    {link.badge && <span>{link.badge}</span>}
+                    <span>{link.name}</span>
                   </span>
-                  <span className="hidden sm:block text-[10px] text-charcoal-muted font-bold tracking-wider uppercase -mt-0.5">
-                    Baby & Newborn Clothing
-                  </span>
-                </div>
-              </Link>
-            </div>
+                </Link>
+              );
+            })}
+          </nav>
 
-            {/* Desktop Search Bar */}
-            <div className="hidden lg:flex flex-1 max-w-md mx-8">
-              <button
-                onClick={() => setIsSearchOpen(true)}
-                className="w-full flex items-center justify-between px-4 py-2.5 bg-cream-100/90 hover:bg-cream-200/90 text-charcoal-muted text-xs sm:text-sm rounded-2xl border border-charcoal-border/70 transition-all shadow-inner group"
-              >
-                <div className="flex items-center space-x-2.5">
-                  <Search className="w-4 h-4 text-charcoal-muted group-hover:text-brand transition-colors" />
-                  <span>Search starter sets, rompers, bodysuits...</span>
-                </div>
-                <kbd className="hidden xl:inline-block px-2 py-0.5 text-[10px] font-semibold text-charcoal-muted bg-white rounded-md border border-charcoal-border shadow-xs">
-                  Ctrl K
-                </kbd>
-              </button>
-            </div>
+          {/* Right Action Icons */}
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            {/* Search Trigger */}
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="p-2.5 rounded-2xl text-charcoal-light hover:text-charcoal hover:bg-cream-100 transition-colors"
+              aria-label="Search products"
+            >
+              <Search className="w-5 h-5" />
+            </button>
 
-            {/* Right Actions: WhatsApp Helpline & Cart */}
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              <a
-                href={`https://wa.me/${cleanPhone}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hidden md:inline-flex items-center space-x-1.5 px-3.5 py-2 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#128C7E] rounded-xl text-xs font-semibold transition-colors border border-[#25D366]/20"
-                title="Customer Support on WhatsApp"
-              >
-                <Phone className="w-3.5 h-3.5 text-[#25D366]" />
-                <span>+92 336 6895035</span>
-              </a>
+            {/* Helpline on desktop */}
+            <a
+              href="https://wa.me/923366895035"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-2xl bg-cream-100 hover:bg-cream-200 text-charcoal text-xs font-bold transition-colors"
+            >
+              <Phone className="w-3.5 h-3.5 text-[#25D366]" />
+              <span>0336-6895035</span>
+            </a>
 
-              <button
-                onClick={openDrawer}
-                aria-label={`Open shopping cart with ${totalItems} items`}
-                className="relative inline-flex items-center p-2.5 sm:px-4 sm:py-2.5 bg-brand hover:bg-brand-dark text-white rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-card hover:shadow-hover"
-              >
-                <ShoppingBag className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Cart</span>
-                {totalItems > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 sm:static sm:ml-2 sm:-top-0 bg-coral text-white text-[11px] font-black w-5 h-5 sm:w-auto sm:h-auto sm:px-2 sm:py-0.2 rounded-full flex items-center justify-center border-2 border-white sm:border-0 shadow-sm animate-pulse">
-                    {totalItems}
-                  </span>
-                )}
-              </button>
-            </div>
+            {/* Cart Button */}
+            <button
+              onClick={openDrawer}
+              className="relative p-2.5 rounded-2xl bg-brand hover:bg-brand-dark text-white transition-all shadow-card hover:shadow-hover active:scale-95 flex items-center space-x-1.5"
+              aria-label="Shopping Cart"
+            >
+              <ShoppingBag className="w-5 h-5" />
+              <span className="hidden sm:inline text-xs font-black">Bag</span>
+              {totalItems > 0 && (
+                <span className="w-5 h-5 rounded-full bg-coral text-white text-[10px] font-black flex items-center justify-center shadow-xs">
+                  {totalItems}
+                </span>
+              )}
+            </button>
           </div>
         </div>
-      </header>
+      </div>
 
-      {/* Mobile Category Navigation Drawer */}
+      {/* Mobile Drawer Menu */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden lg:hidden">
+        <div className="fixed inset-0 z-50 lg:hidden">
+          {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-charcoal/60 backdrop-blur-sm"
+            className="fixed inset-0 bg-charcoal/60 backdrop-blur-sm transition-opacity"
             onClick={() => setIsMobileMenuOpen(false)}
           />
-          <div className="fixed inset-y-0 left-0 max-w-xs w-full bg-white shadow-2xl flex flex-col z-10 animate-in slide-in-from-left duration-300">
-            <div className="p-4 border-b border-charcoal-border flex items-center justify-between bg-cream-50">
-              <div className="flex items-center space-x-2">
-                <div className="relative w-7 h-7 rounded-xl overflow-hidden">
-                  <Image src="/logo.png" alt="Tiny Kids" fill className="object-cover" />
+
+          <div className="fixed inset-y-0 left-0 max-w-xs w-full bg-white shadow-2xl z-50 flex flex-col justify-between p-6">
+            <div className="space-y-6">
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between border-b border-charcoal-border/60 pb-4">
+                <div className="flex items-center space-x-2.5">
+                  <div className="relative w-8 h-8 rounded-xl overflow-hidden bg-white shadow-xs border border-charcoal-border/50">
+                    <Image src="/logo.png" alt="Tiny Kids" fill className="object-cover" />
+                  </div>
+                  <span className="font-black text-lg text-charcoal">Tiny Kids™</span>
                 </div>
-                <span className="font-bold text-sm text-charcoal">Baby Clothing</span>
-              </div>
-              <button
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="p-1 text-charcoal-muted hover:text-charcoal"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-1">
-              <Link
-                href="/"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block px-3 py-2 text-sm font-semibold text-charcoal hover:bg-cream-100 rounded-xl"
-              >
-                All Clothing
-              </Link>
-              {categories.map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/category/${cat.slug}`}
+                <button
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block px-3 py-2 text-sm text-charcoal-light hover:text-brand hover:bg-cream-100 rounded-xl transition-colors"
+                  className="p-2 rounded-xl text-charcoal-muted hover:text-charcoal hover:bg-cream-100"
                 >
-                  {cat.name}
-                </Link>
-              ))}
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Navigation Links */}
+              <nav className="space-y-1.5">
+                {NAV_LINKS.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-bold text-charcoal hover:bg-cream-100 transition-colors"
+                  >
+                    <span className="flex items-center space-x-2">
+                      {link.badge && <span>{link.badge}</span>}
+                      <span>{link.name}</span>
+                    </span>
+                  </Link>
+                ))}
+              </nav>
+            </div>
+
+            {/* Bottom Helpline & COD info */}
+            <div className="pt-4 border-t border-charcoal-border/60 space-y-3">
+              <a
+                href="https://wa.me/923366895035"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-3 bg-[#25D366] text-white font-bold text-xs rounded-2xl flex items-center justify-center space-x-2 shadow-sm"
+              >
+                <Phone className="w-4 h-4" />
+                <span>WhatsApp: +92 336 6895035</span>
+              </a>
+              <div className="text-[11px] text-charcoal-muted text-center flex items-center justify-center space-x-1.5 font-semibold">
+                <Truck className="w-3.5 h-3.5 text-brand" />
+                <span>Cash on Delivery Nationwide</span>
+              </div>
             </div>
           </div>
         </div>
@@ -165,6 +188,6 @@ export default function Header({
 
       {/* Search Modal */}
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
-    </>
+    </header>
   );
 }
