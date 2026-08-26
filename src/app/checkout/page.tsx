@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { Truck, ShieldCheck, ShoppingBag, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/formatters';
+import { sendOrderEmailNotification } from '@/lib/order-notifier';
 
 const POPULAR_CITIES = [
   'Karachi',
@@ -22,8 +23,6 @@ const POPULAR_CITIES = [
   'Hyderabad',
   'Other City',
 ];
-
-const STORE_WHATSAPP = '923366895035';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -93,7 +92,25 @@ export default function CheckoutPage() {
       const randomSuffix = Math.floor(1000 + Math.random() * 9000);
       const orderNumber = `TK-${randomSuffix}`;
 
-      // 1. Direct REST Insert to Supabase Database (Background Sync)
+      // 1. Automatic Background Email Alert to Store Owner (syedalex12@gmail.com)
+      const orderDetails = {
+        order_number: orderNumber,
+        customer_name: formData.customer_name.trim(),
+        customer_phone: phoneClean,
+        customer_email: formData.customer_email.trim() || undefined,
+        city: selectedCity,
+        address: formData.address.trim(),
+        notes: formData.notes.trim() || undefined,
+        items: items.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })),
+        subtotal: Number(subtotal) || 0,
+        shipping_fee: Number(shippingFee) || 0,
+        total: Number(total) || 0,
+      };
+
+      // Fire and forget background email notification
+      sendOrderEmailNotification(orderDetails);
+
+      // 2. Direct REST Insert to Supabase Database
       try {
         const orderPayload = {
           order_number: orderNumber,
@@ -148,33 +165,12 @@ export default function CheckoutPage() {
         console.warn('Database background sync notice:', dbErr);
       }
 
-      // 2. Build WhatsApp Message for Instant Client Notification
-      const itemsListText = items
-        .map((i) => `• ${i.quantity}x ${i.name} (${formatPrice(i.price * i.quantity)})`)
-        .join('\n');
-
-      const whatsappText = `Assalam o Alaikum Tiny Kids! 👶\n\nI have placed an order on your website:\n📦 *Order #:* ${orderNumber}\n👤 *Customer:* ${formData.customer_name.trim()}\n📞 *Phone:* ${phoneClean}\n📍 *Address:* ${formData.address.trim()}\n🏙️ *City:* ${selectedCity}\n${formData.notes ? `📝 *Instructions:* ${formData.notes}\n` : ''}\n🛍️ *Items Ordered:*\n${itemsListText}\n\n🚚 *Delivery:* ${shippingFee === 0 ? 'FREE' : formatPrice(shippingFee)}\n💰 *Total Payable:* ${formatPrice(total)} (Cash on Delivery)\n\nPlease confirm and dispatch my parcel! ✨`;
-
-      const whatsappUrl = `https://wa.me/${STORE_WHATSAPP}?text=${encodeURIComponent(whatsappText)}`;
-
-      // 3. Save to localStorage for instant receipt
-      const orderSummary = {
-        order_number: orderNumber,
-        customer_name: formData.customer_name,
-        customer_phone: phoneClean,
-        address: formData.address,
-        city: selectedCity,
-        notes: formData.notes,
-        items: items.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })),
-        subtotal,
-        shipping_fee: shippingFee,
-        total,
-        whatsapp_url: whatsappUrl,
-        created_at: new Date().toISOString(),
-      };
-
+      // 3. Save to localStorage for instant customer receipt
       if (typeof window !== 'undefined') {
-        localStorage.setItem('tk_last_order', JSON.stringify(orderSummary));
+        localStorage.setItem(
+          'tk_last_order',
+          JSON.stringify({ ...orderDetails, created_at: new Date().toISOString() })
+        );
       }
 
       clearCart();
@@ -187,7 +183,7 @@ export default function CheckoutPage() {
       );
     } catch (err: any) {
       console.error(err);
-      setErrorMsg('Error placing order. Please try again or order via WhatsApp.');
+      setErrorMsg('Error placing order. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -258,7 +254,7 @@ export default function CheckoutPage() {
                     className="w-full px-4 py-3 rounded-xl border border-charcoal-border/80 text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand font-mono"
                   />
                   <span className="text-[10px] text-charcoal-muted mt-1 block">
-                    We will send order tracking updates via WhatsApp/SMS.
+                    We will call / message before delivering your parcel.
                   </span>
                 </div>
 
