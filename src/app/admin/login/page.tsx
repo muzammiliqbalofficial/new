@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Lock, ArrowRight, ShieldCheck, KeyRound } from 'lucide-react';
+import { ArrowRight, ShieldCheck, KeyRound } from 'lucide-react';
 import { verifyAdminPin, setAdminSession, isAdminAuthenticated } from '@/lib/admin-auth';
 
 export default function AdminLoginPage() {
@@ -27,7 +27,7 @@ export default function AdminLoginPage() {
       setAdminSession();
       router.push('/admin');
     } else {
-      setError('Invalid PIN / Password. Please try again.');
+      setError('Invalid Access Code. Access Denied.');
       setIsLoading(false);
     }
   };
@@ -43,7 +43,7 @@ export default function AdminLoginPage() {
           <div>
             <h1 className="text-2xl font-black text-charcoal tracking-tight">Tiny Kids Portal</h1>
             <p className="text-xs text-charcoal-muted mt-1 font-medium">
-              Client Store Management & Orders Dashboard
+              Authorized Personnel Access Only
             </p>
           </div>
         </div>
@@ -52,7 +52,7 @@ export default function AdminLoginPage() {
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-charcoal mb-2">
-              Enter Admin PIN / Password
+              Enter Secret Access Code / Password
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-charcoal-muted">
@@ -62,7 +62,7 @@ export default function AdminLoginPage() {
                 type="password"
                 value={pin}
                 onChange={(e) => setPin(e.target.value)}
-                placeholder="Enter PIN (Default: 7860)"
+                placeholder="••••••••"
                 autoFocus
                 required
                 className="w-full pl-10 pr-4 py-3 rounded-2xl border border-charcoal-border/80 text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand tracking-widest text-center font-bold text-lg"
@@ -81,7 +81,7 @@ export default function AdminLoginPage() {
             disabled={isLoading || !pin.trim()}
             className="w-full py-3.5 bg-brand hover:bg-brand-dark text-white font-bold text-sm rounded-2xl shadow-card hover:shadow-hover transition-all flex items-center justify-center space-x-2 active:scale-98 disabled:opacity-50"
           >
-            <span>{isLoading ? 'Verifying...' : 'Login to Dashboard'}</span>
+            <span>{isLoading ? 'Verifying...' : 'Unlock Dashboard'}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
@@ -89,7 +89,7 @@ export default function AdminLoginPage() {
         <div className="pt-4 border-t border-charcoal-border/50 text-center">
           <span className="text-[11px] text-charcoal-muted flex items-center justify-center space-x-1.5 font-medium">
             <ShieldCheck className="w-3.5 h-3.5 text-brand" />
-            <span>Default PIN: <strong className="text-charcoal">7860</strong></span>
+            <span>End-to-End Encrypted Session</span>
           </span>
         </div>
       </div>
