@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { Truck, ShieldCheck, ShoppingBag, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/formatters';
+import { supabaseAdmin } from '@/lib/supabase';
 
 const POPULAR_CITIES = [
   'Karachi',
@@ -53,7 +54,7 @@ export default function CheckoutPage() {
           Please add items to your cart before proceeding to checkout.
         </p>
         <Link
-          href="/"
+          href="/products"
           className="inline-flex items-center space-x-2 px-6 py-3 bg-brand text-white font-bold text-sm rounded-2xl shadow-card hover:bg-brand-dark transition-all"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -90,6 +91,43 @@ export default function CheckoutPage() {
     try {
       const randomSuffix = Math.floor(1000 + Math.random() * 9000);
       const orderNumber = `TK-${randomSuffix}`;
+
+      // 1. Insert into Supabase Orders table
+      const { data: newOrder, error: orderErr } = await supabaseAdmin
+        .from('orders')
+        .insert({
+          order_number: orderNumber,
+          customer_name: formData.customer_name.trim(),
+          customer_phone: phoneClean,
+          customer_email: formData.customer_email.trim() || null,
+          address: formData.address.trim(),
+          city: selectedCity,
+          notes: formData.notes.trim() || null,
+          subtotal: Number(subtotal) || 0,
+          shipping_fee: Number(shippingFee) || 0,
+          total: Number(total) || 0,
+          status: 'new',
+        })
+        .select()
+        .single();
+
+      if (orderErr || !newOrder) {
+        console.warn('Database order insert issue:', orderErr);
+      }
+
+      // 2. Insert order items
+      if (newOrder && items.length > 0) {
+        const orderItemsPayload = items.map((item) => ({
+          order_id: newOrder.id,
+          product_id: item.id || null,
+          product_name: item.name,
+          unit_price: Number(item.price) || 0,
+          quantity: Number(item.quantity) || 1,
+          line_total: (Number(item.price) || 0) * (Number(item.quantity) || 1),
+        }));
+
+        await supabaseAdmin.from('order_items').insert(orderItemsPayload);
+      }
 
       const orderSummary = {
         order_number: orderNumber,
@@ -133,25 +171,28 @@ export default function CheckoutPage() {
           <ArrowLeft className="w-3.5 h-3.5 mr-1" />
           <span>Back to Cart</span>
         </Link>
-        <h1 className="text-2xl sm:text-3xl font-black text-charcoal tracking-tight">
-          Checkout (Cash on Delivery)
+        <h1 className="text-2xl sm:text-4xl font-black text-charcoal tracking-tight">
+          Checkout — Cash on Delivery
         </h1>
+        <p className="text-xs sm:text-sm text-charcoal-muted mt-1">
+          Complete your delivery details to place your baby clothing order
+        </p>
       </div>
 
+      {errorMsg && (
+        <div className="mb-6 p-4 rounded-2xl bg-coral/10 border border-coral/30 text-coral text-xs font-bold">
+          {errorMsg}
+        </div>
+      )}
+
       <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           {/* Left: Customer & Delivery Details */}
           <div className="lg:col-span-7 space-y-6">
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-charcoal-border/70 shadow-soft space-y-5">
               <h2 className="text-base font-bold text-charcoal uppercase tracking-wider pb-3 border-b border-charcoal-border/50">
-                1. Delivery Information
+                1. Delivery & Contact Details
               </h2>
-
-              {errorMsg && (
-                <div className="p-3.5 rounded-2xl bg-coral/10 border border-coral/30 text-coral text-xs font-semibold">
-                  {errorMsg}
-                </div>
-              )}
 
               {/* Full Name */}
               <div>
@@ -163,13 +204,13 @@ export default function CheckoutPage() {
                   name="customer_name"
                   value={formData.customer_name}
                   onChange={handleChange}
-                  placeholder="e.g. Fatima Khan"
+                  placeholder="e.g. Fatima Ali / Muhammad Usman"
                   required
                   className="w-full px-4 py-3 rounded-xl border border-charcoal-border/80 text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
                 />
               </div>
 
-              {/* WhatsApp Phone */}
+              {/* Phone & Email */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-charcoal mb-1.5 uppercase">
@@ -182,10 +223,10 @@ export default function CheckoutPage() {
                     onChange={handleChange}
                     placeholder="0300 1234567"
                     required
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal-border/80 text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal-border/80 text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand font-mono"
                   />
                   <span className="text-[10px] text-charcoal-muted mt-1 block">
-                    We will send order confirmation on WhatsApp.
+                    We will send order tracking updates via WhatsApp/SMS.
                   </span>
                 </div>
 
@@ -198,7 +239,7 @@ export default function CheckoutPage() {
                     name="customer_email"
                     value={formData.customer_email}
                     onChange={handleChange}
-                    placeholder="name@email.com"
+                    placeholder="example@mail.com"
                     className="w-full px-4 py-3 rounded-xl border border-charcoal-border/80 text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
                   />
                 </div>
@@ -207,7 +248,7 @@ export default function CheckoutPage() {
               {/* City Selection */}
               <div>
                 <label className="block text-xs font-bold text-charcoal mb-1.5 uppercase">
-                  City <span className="text-coral">*</span>
+                  Destination City <span className="text-coral">*</span>
                 </label>
                 <select
                   name="city"

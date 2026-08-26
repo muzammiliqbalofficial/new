@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Zap, Search, Save, Check, RefreshCw } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin as supabase } from '@/lib/supabase';
 import { Product } from '@/lib/types';
 import { resolveMainImage } from '@/lib/formatters';
 

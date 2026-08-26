@@ -17,7 +17,7 @@ import {
   Sparkles,
   AlertTriangle,
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin as supabase } from '@/lib/supabase';
 import { Product, Category } from '@/lib/types';
 import { formatPrice, resolveMainImage } from '@/lib/formatters';
 

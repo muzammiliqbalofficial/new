@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Settings, Save, Check, Phone, Truck, ShieldCheck, Mail } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin as supabase } from '@/lib/supabase';
 
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState({

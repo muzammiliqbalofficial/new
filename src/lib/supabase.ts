@@ -1,26 +1,22 @@
 ﻿import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://qdouuizitxiiumgkgnyt.supabase.co';
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_0ceVbgqEfGEPZYW3v5JVbw_fgqd9X1G';
+const SUPABASE_SERVICE_KEY =
+  process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  'sb_secret_d5OHSu1-JX2kUnq7HZIp3g_rEsECr0Y';
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  if (typeof window !== 'undefined') {
-    console.warn('⚠️ Supabase public environment variables are missing.');
-  }
-}
-
-// Public client for client components and public Data API queries
+// Public read client for catalog
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: { persistSession: false },
 });
 
-// Helper for server-side admin operations (e.g. order verification)
+// Admin client for order creation and portal operations
+export const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+  auth: { persistSession: false },
+});
+
 export function getServiceSupabase() {
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!serviceKey) {
-    return supabase;
-  }
-  return createClient(SUPABASE_URL, serviceKey, {
-    auth: { persistSession: false },
-  });
+  return supabaseAdmin;
 }
