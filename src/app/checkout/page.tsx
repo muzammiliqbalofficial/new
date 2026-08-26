@@ -7,7 +7,6 @@ import Image from 'next/image';
 import { Truck, ShieldCheck, ShoppingBag, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/formatters';
-import { supabaseAdmin } from '@/lib/supabase';
 
 const POPULAR_CITIES = [
   'Karachi',
@@ -23,6 +22,8 @@ const POPULAR_CITIES = [
   'Hyderabad',
   'Other City',
 ];
+
+const STORE_WHATSAPP = '923366895035';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -92,10 +93,9 @@ export default function CheckoutPage() {
       const randomSuffix = Math.floor(1000 + Math.random() * 9000);
       const orderNumber = `TK-${randomSuffix}`;
 
-      // 1. Insert into Supabase Orders table
-      const { data: newOrder, error: orderErr } = await supabaseAdmin
-        .from('orders')
-        .insert({
+      // 1. Direct REST Insert to Supabase Database (Background Sync)
+      try {
+        const orderPayload = {
           order_number: orderNumber,
           customer_name: formData.customer_name.trim(),
           customer_phone: phoneClean,
@@ -107,28 +107,57 @@ export default function CheckoutPage() {
           shipping_fee: Number(shippingFee) || 0,
           total: Number(total) || 0,
           status: 'new',
-        })
-        .select()
-        .single();
+        };
 
-      if (orderErr || !newOrder) {
-        console.warn('Database order insert issue:', orderErr);
+        const res = await fetch('https://qdouuizitxiiumgkgnyt.supabase.co/rest/v1/orders', {
+          method: 'POST',
+          headers: {
+            'apikey': 'sb_secret_d5OHSu1-JX2kUnq7HZIp3g_rEsECr0Y',
+            'Authorization': 'Bearer sb_secret_d5OHSu1-JX2kUnq7HZIp3g_rEsECr0Y',
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation',
+          },
+          body: JSON.stringify(orderPayload),
+        });
+
+        if (res.ok) {
+          const insertedOrders = await res.json();
+          const newOrderId = insertedOrders?.[0]?.id;
+
+          if (newOrderId && items.length > 0) {
+            const itemPayloads = items.map((i) => ({
+              order_id: newOrderId,
+              product_name: i.name,
+              unit_price: Number(i.price) || 0,
+              quantity: Number(i.quantity) || 1,
+              line_total: (Number(i.price) || 0) * (Number(i.quantity) || 1),
+            }));
+
+            await fetch('https://qdouuizitxiiumgkgnyt.supabase.co/rest/v1/order_items', {
+              method: 'POST',
+              headers: {
+                'apikey': 'sb_secret_d5OHSu1-JX2kUnq7HZIp3g_rEsECr0Y',
+                'Authorization': 'Bearer sb_secret_d5OHSu1-JX2kUnq7HZIp3g_rEsECr0Y',
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(itemPayloads),
+            });
+          }
+        }
+      } catch (dbErr) {
+        console.warn('Database background sync notice:', dbErr);
       }
 
-      // 2. Insert order items
-      if (newOrder && items.length > 0) {
-        const orderItemsPayload = items.map((item) => ({
-          order_id: newOrder.id,
-          product_id: item.id || null,
-          product_name: item.name,
-          unit_price: Number(item.price) || 0,
-          quantity: Number(item.quantity) || 1,
-          line_total: (Number(item.price) || 0) * (Number(item.quantity) || 1),
-        }));
+      // 2. Build WhatsApp Message for Instant Client Notification
+      const itemsListText = items
+        .map((i) => `• ${i.quantity}x ${i.name} (${formatPrice(i.price * i.quantity)})`)
+        .join('\n');
 
-        await supabaseAdmin.from('order_items').insert(orderItemsPayload);
-      }
+      const whatsappText = `Assalam o Alaikum Tiny Kids! 👶\n\nI have placed an order on your website:\n📦 *Order #:* ${orderNumber}\n👤 *Customer:* ${formData.customer_name.trim()}\n📞 *Phone:* ${phoneClean}\n📍 *Address:* ${formData.address.trim()}\n🏙️ *City:* ${selectedCity}\n${formData.notes ? `📝 *Instructions:* ${formData.notes}\n` : ''}\n🛍️ *Items Ordered:*\n${itemsListText}\n\n🚚 *Delivery:* ${shippingFee === 0 ? 'FREE' : formatPrice(shippingFee)}\n💰 *Total Payable:* ${formatPrice(total)} (Cash on Delivery)\n\nPlease confirm and dispatch my parcel! ✨`;
 
+      const whatsappUrl = `https://wa.me/${STORE_WHATSAPP}?text=${encodeURIComponent(whatsappText)}`;
+
+      // 3. Save to localStorage for instant receipt
       const orderSummary = {
         order_number: orderNumber,
         customer_name: formData.customer_name,
@@ -140,6 +169,7 @@ export default function CheckoutPage() {
         subtotal,
         shipping_fee: shippingFee,
         total,
+        whatsapp_url: whatsappUrl,
         created_at: new Date().toISOString(),
       };
 
@@ -148,10 +178,12 @@ export default function CheckoutPage() {
       }
 
       clearCart();
+
+      // Redirect to Success Page
       router.push(
-        `/checkout/success/?order=${orderNumber}&name=${encodeURIComponent(
+        `/checkout/success/?order_number=${orderNumber}&name=${encodeURIComponent(
           formData.customer_name
-        )}&total=${total}`
+        )}&total=${total}&city=${encodeURIComponent(selectedCity)}`
       );
     } catch (err: any) {
       console.error(err);
