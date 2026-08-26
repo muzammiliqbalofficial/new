@@ -4,11 +4,20 @@ const nextConfig = {
   trailingSlash: true,
   images: {
     unoptimized: true,
-    loader: 'custom',
-    loaderFile: './src/lib/r2-image-loader.ts',
-    deviceSizes: [300, 700, 1400],
-    imageSizes: [150, 300, 700],
-    formats: ['image/webp'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'pub-4327055644f945ce92583334944f4675.r2.dev',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.slatic.net',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.daraz.pk',
+      },
+    ],
   },
 };
 

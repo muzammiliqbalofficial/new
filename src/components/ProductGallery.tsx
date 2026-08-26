@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { ProductImage } from '@/lib/types';
+import { getR2ImageUrl } from '@/lib/formatters';
 
 interface Props {
   images: ProductImage[];
@@ -33,6 +34,7 @@ export default function ProductGallery({ images, productName }: Props) {
   }
 
   const currentImage = displayImages[activeIndex] || displayImages[0];
+  const mainImageUrl = getR2ImageUrl(currentImage?.r2_key, '1400w');
 
   const handlePrev = () => {
     setActiveIndex((prev) => (prev === 0 ? displayImages.length - 1 : prev - 1));
@@ -68,7 +70,7 @@ export default function ProductGallery({ images, productName }: Props) {
       >
         <div className="relative w-full h-full">
           <Image
-            src={currentImage.r2_key}
+            src={mainImageUrl}
             alt={`${productName} - Image ${activeIndex + 1}`}
             fill
             priority={activeIndex === 0}
@@ -115,27 +117,30 @@ export default function ProductGallery({ images, productName }: Props) {
       {/* Thumbnails Carousel */}
       {displayImages.length > 1 && (
         <div className="flex space-x-2.5 overflow-x-auto pb-2 scrollbar-none no-scrollbar">
-          {displayImages.map((img, idx) => (
-            <button
-              key={img.id || idx}
-              onClick={() => setActiveIndex(idx)}
-              className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden flex-shrink-0 bg-white p-1 transition-all border-2 ${
-                activeIndex === idx
-                  ? 'border-brand ring-2 ring-brand/20 scale-95 shadow-sm'
-                  : 'border-charcoal-border/60 hover:border-charcoal-muted opacity-80 hover:opacity-100'
-              }`}
-            >
-              <div className="relative w-full h-full">
-                <Image
-                  src={img.r2_key}
-                  alt={`${productName} thumbnail ${idx + 1}`}
-                  fill
-                  sizes="80px"
-                  className="object-contain object-center"
-                />
-              </div>
-            </button>
-          ))}
+          {displayImages.map((img, idx) => {
+            const thumbUrl = getR2ImageUrl(img.r2_key, '300w');
+            return (
+              <button
+                key={img.id || idx}
+                onClick={() => setActiveIndex(idx)}
+                className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden flex-shrink-0 bg-white p-1 transition-all border-2 ${
+                  activeIndex === idx
+                    ? 'border-brand ring-2 ring-brand/20 scale-95 shadow-sm'
+                    : 'border-charcoal-border/60 hover:border-charcoal-muted opacity-80 hover:opacity-100'
+                }`}
+              >
+                <div className="relative w-full h-full">
+                  <Image
+                    src={thumbUrl}
+                    alt={`${productName} thumbnail ${idx + 1}`}
+                    fill
+                    sizes="80px"
+                    className="object-contain object-center"
+                  />
+                </div>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

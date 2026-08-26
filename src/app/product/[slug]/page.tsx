@@ -1,14 +1,14 @@
 ﻿import React from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import Image from 'next/image';
+import Link from 'next/link';
+import { ChevronRight, ShieldCheck, Truck, RefreshCw, Sparkles } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import Breadcrumbs from '@/components/Breadcrumbs';
 import ProductGallery from '@/components/ProductGallery';
 import ProductActions from '@/components/ProductActions';
 import ProductCard from '@/components/ProductCard';
 import { Product } from '@/lib/types';
-import { sanitizeDescriptionHtml, resolveMainImage, formatPrice } from '@/lib/formatters';
+import { formatPrice, resolveMainImage, getR2ImageUrl } from '@/lib/formatters';
 
 export const revalidate = 3600;
 
@@ -21,245 +21,317 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-async function getProduct(slug: string): Promise<Product | null> {
-  const { data, error } = await supabase
-    .from('products')
-    .select(
-      `
-      id,
-      slug,
-      name,
-      name_original,
-      brand,
-      warranty,
-      attributes,
-      description_html,
-      description_text,
-      price,
-      sale_price,
-      stock,
-      is_published,
-      categories (
+async function getProduct(slug: string): Promise<{ product: Product | null; related: Product[] }> {
+  try {
+    const { data: rawProduct, error } = await supabase
+      .from('products')
+      .select(
+        `
         id,
+        slug,
         name,
-        slug
-      ),
-      product_images (
-        id,
-        r2_key,
-        sort_order,
-        is_primary,
-        is_white_background,
-        is_description_image
-      )
-    `
-    )
-    .eq('slug', slug)
-    .eq('is_published', true)
-    .single();
-
-  if (error || !data) return null;
-  return data as unknown as Product;
-}
-
-async function getRelatedProducts(categoryId?: string, currentProductId?: string): Promise<Product[]> {
-  if (!categoryId) return [];
-  const { data } = await supabase
-    .from('products')
-    .select(
+        brand,
+        attributes,
+        price,
+        sale_price,
+        stock,
+        is_published,
+        description_text,
+        categories (
+          id,
+          name,
+          slug
+        ),
+        product_images (
+          id,
+          r2_key,
+          sort_order,
+          is_primary,
+          is_white_background,
+          is_description_image
+        )
       `
-      id,
-      slug,
-      name,
-      price,
-      sale_price,
-      categories (
-        id,
-        name,
-        slug
-      ),
-      product_images (
-        id,
-        r2_key,
-        sort_order,
-        is_primary,
-        is_white_background,
-        is_description_image
       )
-    `
-    )
-    .eq('category_id', categoryId)
-    .eq('is_published', true)
-    .neq('id', currentProductId || '')
-    .limit(4);
+      .eq('slug', slug)
+      .eq('is_published', true)
+      .single();
 
-  return (data || []) as unknown as Product[];
+    if (error || !rawProduct) {
+      return { product: null, related: [] };
+    }
+
+    const product = rawProduct as unknown as Product;
+    const catObj: any = (product as any).categories;
+    const categoryId = Array.isArray(catObj) ? catObj[0]?.id : catObj?.id;
+
+    let related: Product[] = [];
+    if (categoryId) {
+      const { data: rel } = await supabase
+        .from('products')
+        .select(
+          `
+          id,
+          slug,
+          name,
+          price,
+          sale_price,
+          stock,
+          is_published,
+          categories (
+            id,
+            name,
+            slug
+          ),
+          product_images (
+            id,
+            r2_key,
+            sort_order,
+            is_primary,
+            is_white_background,
+            is_description_image
+          )
+        `
+        )
+        .eq('category_id', categoryId)
+        .eq('is_published', true)
+        .neq('id', product.id)
+        .limit(4);
+
+      related = (rel || []) as unknown as Product[];
+    }
+
+    return { product, related };
+  } catch (err) {
+    console.error('Error fetching product:', err);
+    return { product: null, related: [] };
+  }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resolvedParams = await params;
-  const product = await getProduct(resolvedParams.slug);
+  const { product } = await getProduct(resolvedParams.slug);
 
   if (!product) {
-    return {
-      title: 'Product Not Found | Tiny Kids',
-    };
+    return { title: 'Product Not Found | Tiny Kids' };
   }
 
-  const imageStem = resolveMainImage(product);
-  const r2Base = process.env.NEXT_PUBLIC_R2_PUBLIC_URL || '';
-  const imageUrl = `${r2Base}/${imageStem}-700w.webp`;
+  const mainImg = resolveMainImage(product, '1400w');
+  const priceText = product.price ? ` — ${formatPrice(product.price)}` : '';
 
   return {
-    title: `${product.name} | Tiny Kids Pakistan`,
-    description: product.description_text
-      ? product.description_text.slice(0, 160)
-      : `Buy ${product.name} online in Pakistan at Tiny Kids. Cash on delivery available.`,
+    title: `${product.name}${priceText} | Tiny Kids Pakistan`,
+    description: `Buy ${product.name} online in Pakistan. 100% pure cotton babywear, Cash on Delivery nationwide, 7-day easy exchange guarantee.`,
+    alternates: {
+      canonical: `https://tinykids.pk/product/${product.slug}/`,
+    },
     openGraph: {
-      title: product.name,
-      description: product.description_text?.slice(0, 160),
-      images: [{ url: imageUrl }],
+      title: `${product.name} | Tiny Kids Pakistan`,
+      description: `Buy ${product.name} with Cash on Delivery across Pakistan.`,
+      images: [{ url: mainImg, width: 800, height: 800, alt: product.name }],
     },
   };
 }
 
-export default async function ProductDetailPage({ params }: Props) {
+export default async function ProductPage({ params }: Props) {
   const resolvedParams = await params;
-  const product = await getProduct(resolvedParams.slug);
+  const { product, related } = await getProduct(resolvedParams.slug);
 
   if (!product) {
     notFound();
   }
 
-  const related = await getRelatedProducts(product.categories?.id, product.id);
-  const images = (product.product_images || []).sort((a, b) => a.sort_order - b.sort_order);
-  const descImages = images.filter((img) => img.is_description_image);
   const imageStem = resolveMainImage(product);
+  const mainImageUrl = getR2ImageUrl(product.product_images?.[0]?.r2_key, '1400w');
+  const catObj: any = (product as any).categories;
+  const category = Array.isArray(catObj) ? catObj[0] : catObj;
 
-  // Filter dynamic attributes (remove empty, "No Brand", internal keys)
-  const validAttributes = Object.entries(product.attributes || {}).filter(([key, val]) => {
-    if (!val || typeof val !== 'string') return false;
-    const lower = val.trim().toLowerCase();
-    if (lower === 'no brand' || lower === 'no warranty' || lower === 'n/a' || lower === 'none') return false;
-    return true;
-  });
+  // Google Product Schema
+  const productSchema = {
+    '@context': 'https://schema.org/',
+    '@type': 'Product',
+    name: product.name,
+    image: [mainImageUrl],
+    description:
+      product.description_text ||
+      `${product.name} crafted from 100% pure cotton for newborn babies and infants. Cash on Delivery across Pakistan.`,
+    sku: product.slug,
+    brand: {
+      '@type': 'Brand',
+      name: 'Tiny Kids',
+    },
+    offers: {
+      '@type': 'Offer',
+      url: `https://tinykids.pk/product/${product.slug}/`,
+      priceCurrency: 'PKR',
+      price: product.price || 0,
+      priceValidUntil: '2027-12-31',
+      itemCondition: 'https://schema.org/NewCondition',
+      availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      seller: {
+        '@type': 'Organization',
+        name: 'Tiny Kids',
+      },
+    },
+  };
+
+  // Google BreadcrumbList Schema
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: 'https://tinykids.pk',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: category?.name || 'Baby Clothes',
+        item: `https://tinykids.pk/category/${category?.slug || 'newborn-starter-sets'}/`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: product.name,
+        item: `https://tinykids.pk/product/${product.slug}/`,
+      },
+    ],
+  };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-12">
-      {/* 1. Breadcrumbs */}
-      <Breadcrumbs
-        items={[
-          ...(product.categories
-            ? [{ label: product.categories.name, href: `/category/${product.categories.slug}` }]
-            : []),
-          { label: product.name },
-        ]}
+    <div className="space-y-12 pb-16">
+      {/* Schema Injection */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
 
-      {/* 2. Main Product Info Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-        {/* Left: Responsive Image Gallery */}
-        <div className="lg:col-span-7">
-          <ProductGallery images={images} productName={product.name} />
-        </div>
-
-        {/* Right: Product Details & CTA */}
-        <div className="lg:col-span-5 space-y-6">
-          {/* Category & Title */}
-          <div>
-            {product.categories && (
-              <span className="text-xs font-bold uppercase tracking-wider text-brand">
-                {product.categories.name}
-              </span>
+      {/* Breadcrumb Navigation */}
+      <div className="bg-cream-50/80 border-b border-charcoal-border/50 py-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <nav className="flex items-center space-x-2 text-xs font-semibold text-charcoal-muted truncate">
+            <Link href="/" className="hover:text-charcoal transition-colors">
+              Home
+            </Link>
+            <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" />
+            {category && (
+              <>
+                <Link
+                  href={`/category/${category.slug}`}
+                  className="hover:text-charcoal transition-colors whitespace-nowrap"
+                >
+                  {category.name}
+                </Link>
+                <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" />
+              </>
             )}
-            <h1 className="text-xl sm:text-3xl font-black text-charcoal tracking-tight mt-1 leading-tight">
-              {product.name}
-            </h1>
+            <span className="text-charcoal font-bold truncate">{product.name}</span>
+          </nav>
+        </div>
+      </div>
+
+      {/* Main Product Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+          {/* Left Gallery (7 Cols on desktop) */}
+          <div className="lg:col-span-7">
+            <ProductGallery images={product.product_images || []} productName={product.name} />
           </div>
 
-          {/* Interactive Actions (Pricing, COD Add to Cart, WhatsApp Enquiry) */}
-          <ProductActions product={product} imageStem={imageStem} />
+          {/* Right Product Details & Buy Actions (5 Cols) */}
+          <div className="lg:col-span-5 space-y-6">
+            <div>
+              {/* Category & Studio Badge */}
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="text-[11px] font-black uppercase tracking-wider text-coral">
+                  {category?.name || 'Newborn Collection'}
+                </span>
+                <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full">
+                  In Stock • Dispatch in 24h
+                </span>
+              </div>
 
-          {/* Key Specifications & Attributes Table */}
-          {validAttributes.length > 0 && (
-            <div className="pt-4 border-t border-charcoal-border/60">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-charcoal mb-3">
-                Product Details
-              </h3>
-              <div className="bg-white rounded-2xl border border-charcoal-border/70 overflow-hidden divide-y divide-charcoal-border/50 text-xs">
-                {validAttributes.map(([key, val]) => (
-                  <div key={key} className="flex justify-between py-2.5 px-4">
-                    <span className="text-charcoal-muted font-medium capitalize">{key}</span>
-                    <span className="text-charcoal font-semibold">{val}</span>
-                  </div>
-                ))}
+              {/* Title */}
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-charcoal tracking-tight leading-snug">
+                {product.name}
+              </h1>
+            </div>
+
+            {/* Price Box */}
+            <div className="p-4 bg-cream-50 rounded-2xl border border-charcoal-border/70 flex items-baseline space-x-3">
+              <span className="text-2xl sm:text-3xl font-black text-charcoal tracking-tight">
+                {formatPrice(product.price)}
+              </span>
+              {product.sale_price && product.sale_price > (product.price || 0) && (
+                <>
+                  <span className="text-sm sm:text-base text-charcoal-muted line-through">
+                    {formatPrice(product.sale_price)}
+                  </span>
+                  <span className="text-xs font-black text-coral bg-coral/10 px-2 py-0.5 rounded-md">
+                    SAVE {Math.round((((product.sale_price || 0) - (product.price || 0)) / (product.sale_price || 1)) * 100)}%
+                  </span>
+                </>
+              )}
+            </div>
+
+            {/* Add to Cart & WhatsApp Order Actions */}
+            <ProductActions product={product} imageStem={imageStem} />
+
+            {/* Trust Assurance Pills */}
+            <div className="space-y-2.5 pt-4 border-t border-charcoal-border/50 text-xs">
+              <div className="flex items-center space-x-2.5 text-charcoal">
+                <Truck className="w-4 h-4 text-brand flex-shrink-0" />
+                <span>
+                  <strong>Cash on Delivery:</strong> Free shipping above Rs. 2,999 (Flat Rs. 200 below).
+                </span>
+              </div>
+              <div className="flex items-center space-x-2.5 text-charcoal">
+                <Sparkles className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                <span>
+                  <strong>Pure Cotton Fabric:</strong> Breathable, gentle & safe for sensitive infant skin.
+                </span>
+              </div>
+              <div className="flex items-center space-x-2.5 text-charcoal">
+                <RefreshCw className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                <span>
+                  <strong>7-Day Easy Exchange:</strong> Hassle-free size replacement guarantee.
+                </span>
               </div>
             </div>
-          )}
+
+            {/* Product Description */}
+            {product.description_text && (
+              <div className="pt-4 border-t border-charcoal-border/50 space-y-2">
+                <h3 className="text-xs font-black uppercase tracking-wider text-charcoal">
+                  Fabric & Product Specifications
+                </h3>
+                <div className="text-xs text-charcoal-muted leading-relaxed whitespace-pre-line bg-cream-50/50 p-4 rounded-2xl border border-charcoal-border/50">
+                  {product.description_text}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* 3. Product Description & Body Images */}
-      <div className="border-t border-charcoal-border/60 pt-10">
-        <div className="max-w-3xl space-y-6">
-          <h2 className="text-xl font-bold text-charcoal tracking-tight">
-            Detailed Description
-          </h2>
-
-          {product.description_html ? (
-            <div
-              className="prose prose-sm max-w-none text-charcoal-light leading-relaxed space-y-3"
-              dangerouslySetInnerHTML={{
-                __html: sanitizeDescriptionHtml(product.description_html),
-              }}
-            />
-          ) : product.description_text ? (
-            <p className="text-sm text-charcoal-light leading-relaxed whitespace-pre-line">
-              {product.description_text}
-            </p>
-          ) : (
-            <p className="text-sm text-charcoal-muted">No detailed description available.</p>
-          )}
-
-          {/* Embedded Description Images */}
-          {descImages.length > 0 && (
-            <div className="space-y-4 pt-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-charcoal-muted">
-                Product Highlights & Details
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {descImages.map((img, i) => (
-                  <div
-                    key={img.id || i}
-                    className="relative aspect-square rounded-2xl overflow-hidden bg-cream-50 border border-charcoal-border/50"
-                  >
-                    <Image
-                      src={img.r2_key}
-                      alt={`${product.name} detail image ${i + 1}`}
-                      fill
-                      sizes="(max-width: 640px) 100vw, 50vw"
-                      className="object-contain object-center"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* 4. Related Products Grid */}
+      {/* Related Products */}
       {related.length > 0 && (
-        <div className="border-t border-charcoal-border/60 pt-12 space-y-6">
-          <h2 className="text-xl font-bold text-charcoal tracking-tight">
-            Similar Baby Clothing
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pt-8 border-t border-charcoal-border/50">
+          <h2 className="text-xl sm:text-2xl font-black text-charcoal tracking-tight">
+            You May Also Like
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
             {related.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
-        </div>
+        </section>
       )}
     </div>
   );

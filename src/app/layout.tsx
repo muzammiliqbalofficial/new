@@ -1,111 +1,157 @@
 ﻿import type { Metadata, Viewport } from 'next';
-import { Outfit } from 'next/font/google';
 import './globals.css';
-import { supabase } from '@/lib/supabase';
-import { CartProvider } from '@/context/CartContext';
-import AnnouncementBar from '@/components/AnnouncementBar';
 import Header from '@/components/Header';
-import CategoryNav from '@/components/CategoryNav';
 import Footer from '@/components/Footer';
 import CartDrawer from '@/components/CartDrawer';
-import { Category, StoreSettings } from '@/lib/types';
-
-const outfit = Outfit({
-  subsets: ['latin'],
-  variable: '--font-outfit',
-  display: 'swap',
-});
+import FloatingWhatsApp from '@/components/FloatingWhatsApp';
+import { CartProvider } from '@/context/CartContext';
 
 export const viewport: Viewport = {
-  themeColor: '#3D6A52',
+  themeColor: '#7C3AED',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://tinykids.pk'),
   title: {
+    default: 'Tiny Kids — Newborn Baby Clothes & Rompers Online in Pakistan',
     template: '%s | Tiny Kids Pakistan',
-    default: 'Tiny Kids — Premium Baby & Kids Clothing and Essentials in Pakistan',
   },
   description:
-    'Shop newborn starter sets, rompers, bodysuits, blankets, and nursery essentials in Pakistan. Cash on delivery available nationwide with easy 7-day returns.',
+    'Shop premium newborn baby clothes, rompers, baby gift starter sets, and infant dresses online in Pakistan. 100% pure cotton, fast Cash on Delivery across Karachi, Lahore, Islamabad & nationwide.',
   keywords: [
-    'baby clothes pakistan',
-    'newborn baby set',
-    'baby romper online pakistan',
-    'cash on delivery baby store',
-    'baby starter set',
-    'infant clothing karachi lahore islamabad',
+    'Newborn baby clothes Pakistan',
+    'Baby clothes online Pakistan',
+    'Newborn baby starter sets',
+    'Baby rompers Pakistan',
+    'Infant bodysuits Pakistan',
+    'Baby boy clothes online',
+    'Baby girl dresses Karachi',
+    'Baby gift packs Pakistan',
+    'Cash on delivery baby shop Pakistan',
+    'Tiny Kids Pakistan',
+    'Branny baby clothes alternative',
   ],
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_STORE_DOMAIN
-      ? `https://${process.env.NEXT_PUBLIC_STORE_DOMAIN}`
-      : 'https://tinykids.pk'
-  ),
+  authors: [{ name: 'Tiny Kids', url: 'https://tinykids.pk' }],
+  creator: 'Tiny Kids',
+  publisher: 'Tiny Kids',
+  formatDetection: {
+    telephone: true,
+    email: true,
+    address: true,
+  },
+  alternates: {
+    canonical: 'https://tinykids.pk',
+  },
   openGraph: {
     type: 'website',
     locale: 'en_PK',
-    siteName: 'Tiny Kids',
+    url: 'https://tinykids.pk',
+    siteName: 'Tiny Kids Pakistan',
+    title: 'Tiny Kids — Newborn Baby Clothes & Rompers Online in Pakistan',
+    description:
+      'Explore soft, pure cotton newborn starter sets, baby rompers, and dresses. Cash on Delivery across Pakistan.',
+    images: [
+      {
+        url: 'https://tinykids.pk/logo.png',
+        width: 1200,
+        height: 630,
+        alt: 'Tiny Kids — Premium Baby Clothes Pakistan',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Tiny Kids — Newborn Baby Clothes in Pakistan',
+    description:
+      'Pure cotton newborn starter packs, rompers, and infant outfits with Cash on Delivery in Pakistan.',
+    images: ['https://tinykids.pk/logo.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
 };
 
-async function getGlobalStoreData(): Promise<{
-  settings: StoreSettings | null;
-  categories: Category[];
-}> {
-  try {
-    // 1. Fetch settings
-    const { data: settingsData } = await supabase
-      .from('settings')
-      .select('*')
-      .eq('id', 1)
-      .single();
+// Global Organization & WebSite JSON-LD Schema for Google Rich Snippets
+const globalSchema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': 'https://tinykids.pk/#organization',
+      name: 'Tiny Kids',
+      url: 'https://tinykids.pk',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://tinykids.pk/logo.png',
+        width: 512,
+        height: 512,
+      },
+      contactPoint: {
+        '@type': 'ContactPoint',
+        telephone: '+92-336-6895035',
+        contactType: 'customer service',
+        areaServed: 'PK',
+        availableLanguage: ['English', 'Urdu'],
+      },
+      sameAs: [
+        'https://www.facebook.com/tinykids.pk',
+        'https://www.instagram.com/tinykids.pk',
+      ],
+    },
+    {
+      '@type': 'WebSite',
+      '@id': 'https://tinykids.pk/#website',
+      url: 'https://tinykids.pk',
+      name: 'Tiny Kids',
+      publisher: {
+        '@id': 'https://tinykids.pk/#organization',
+      },
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: 'https://tinykids.pk/search?q={search_term_string}',
+        'query-input': 'required name=search_term_string',
+      },
+    },
+  ],
+};
 
-    // 2. Fetch visible categories
-    const { data: categoriesData } = await supabase
-      .from('categories')
-      .select('id, name, slug, sort_order, is_visible')
-      .eq('is_visible', true)
-      .order('sort_order', { ascending: true });
-
-    return {
-      settings: settingsData as StoreSettings | null,
-      categories: (categoriesData || []) as Category[],
-    };
-  } catch (err) {
-    console.error('Error loading global layout data:', err);
-    return { settings: null, categories: [] };
-  }
-}
-
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { settings, categories } = await getGlobalStoreData();
-
-  const storeName = settings?.store_name || process.env.NEXT_PUBLIC_STORE_NAME || 'Tiny Kids';
-  const whatsappNumber = settings?.whatsapp_number || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '923000000000';
-  const announcementText = settings?.announcement_bar_text || 'Cash on Delivery Available Nationwide • Easy 7-Day Returns';
-  const contactEmail = settings?.contact_email || process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'info@tinykids.pk';
-
   return (
-    <html lang="en" className={outfit.variable}>
-      <body className="min-h-screen flex flex-col font-sans bg-cream-50 text-charcoal">
+    <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap"
+          rel="stylesheet"
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(globalSchema) }}
+        />
+      </head>
+      <body className="font-sans antialiased text-charcoal bg-white flex flex-col min-h-screen selection:bg-brand-soft selection:text-brand">
         <CartProvider>
-          <AnnouncementBar announcementText={announcementText} whatsappNumber={whatsappNumber} />
-          <Header storeName={storeName} whatsappNumber={whatsappNumber} categories={categories} />
-          <CategoryNav categories={categories} />
-          <main className="flex-1">{children}</main>
-          <Footer
-            storeName={storeName}
-            whatsappNumber={whatsappNumber}
-            contactEmail={contactEmail}
-            categories={categories}
-          />
+          <Header />
+          <div className="flex-1">{children}</div>
+          <Footer />
           <CartDrawer />
+          <FloatingWhatsApp />
         </CartProvider>
       </body>
     </html>

@@ -21,10 +21,9 @@ async function getCategoryData(slug: string): Promise<{
   products: Product[];
 }> {
   try {
-    // 1. Fetch category
     const { data: categoryData, error: catError } = await supabase
       .from('categories')
-      .select('id, name, slug, description, sort_order, is_visible')
+      .select('id, name, slug, sort_order, is_visible')
       .eq('slug', slug)
       .single();
 
@@ -32,8 +31,7 @@ async function getCategoryData(slug: string): Promise<{
       return { category: null, products: [] };
     }
 
-    // 2. Fetch all products in this category with images
-    const { data: productsData } = await supabase
+    const { data: productsData, error: prodError } = await supabase
       .from('products')
       .select(
         `
@@ -80,14 +78,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { category, products } = await getCategoryData(resolvedParams.slug);
 
   if (!category) {
-    return {
-      title: 'Category Not Found | Tiny Kids',
-    };
+    return { title: 'Category Not Found | Tiny Kids' };
   }
 
   return {
-    title: `${category.name} — Baby Clothing | Tiny Kids Pakistan`,
-    description: `Shop ${category.name} online at Tiny Kids. Explore ${products.length}+ soft, high-quality newborn & baby designs with Cash on Delivery across Pakistan.`,
+    title: `${category.name} — Newborn Baby Clothes Online in Pakistan | Tiny Kids™`,
+    description: `Shop ${category.name} in Pakistan at Tiny Kids. Explore ${products.length}+ soft 100% pure cotton baby designs with nationwide Cash on Delivery.`,
+    alternates: {
+      canonical: `https://tinykids.pk/category/${category.slug}/`,
+    },
+    openGraph: {
+      title: `${category.name} | Tiny Kids Pakistan`,
+      description: `Shop ${category.name} with Cash on Delivery across Pakistan.`,
+      url: `https://tinykids.pk/category/${category.slug}/`,
+    },
   };
 }
 
@@ -99,10 +103,54 @@ export default async function CategoryPage({ params }: Props) {
     notFound();
   }
 
+  // Structured Schema for Category Collection & Breadcrumbs
+  const categorySchema = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: `${category.name} - Baby Clothes Pakistan`,
+    description: `Shop ${category.name} online at Tiny Kids Pakistan with Cash on Delivery.`,
+    url: `https://tinykids.pk/category/${category.slug}/`,
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: products.slice(0, 12).map((prod, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        url: `https://tinykids.pk/product/${prod.slug}/`,
+        name: prod.name,
+      })),
+    },
+  };
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: 'https://tinykids.pk',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: category.name,
+        item: `https://tinykids.pk/category/${category.slug}/`,
+      },
+    ],
+  };
+
   return (
-    <CategoryView
-      category={category}
-      initialProducts={products}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(categorySchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <CategoryView category={category} initialProducts={products} />
+    </>
   );
 }
