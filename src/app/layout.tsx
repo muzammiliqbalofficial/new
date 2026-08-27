@@ -30,6 +30,16 @@ export const metadata: Metadata = {
     'Cash on delivery baby shop Pakistan',
     'tinykids.pk',
   ],
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/logo.png', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/logo.png' },
+    ],
+    shortcut: ['/favicon.ico'],
+  },
   verification: {
     google: 'google-site-verification-tinykids',
   },
@@ -133,6 +143,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="apple-touch-icon" href="/logo.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
