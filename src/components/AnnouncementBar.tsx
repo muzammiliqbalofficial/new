@@ -15,10 +15,10 @@ export default function AnnouncementBar({
   const cleanPhone = whatsappNumber.replace(/[^0-9]/g, '');
 
   return (
-    <aside aria-label="Announcement" className="bg-brand text-white text-xs py-2 px-4 border-b border-brand-dark/20">
+    <aside aria-label="Announcement" className="bg-[#282524] text-white text-xs py-2 px-4 border-b border-white/10">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center space-x-2 mx-auto sm:mx-0 overflow-hidden text-center">
-          <Truck className="w-3.5 h-3.5 flex-shrink-0 text-coral-light animate-pulse" />
+          <Truck className="w-3.5 h-3.5 flex-shrink-0 text-coral-light" />
           <span className="font-medium tracking-wide truncate">{announcementText}</span>
         </div>
         <div className="hidden sm:flex items-center space-x-4 text-white/90">

@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Phone, Mail, MapPin, MessageCircle, ShieldCheck, Truck } from 'lucide-react';
+import { Phone, Mail, MapPin, ShieldCheck, Truck } from 'lucide-react';
 
 const CITIES = [
   'Karachi',
@@ -24,152 +24,144 @@ const CITIES = [
 
 export default function Footer() {
   return (
-    <footer className="bg-charcoal text-white pt-12 sm:pt-16 pb-8 border-t border-charcoal-light/20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-          {/* Brand Info */}
+    <footer className="bg-charcoal text-white pt-16 pb-12 border-t border-charcoal-light/20 mt-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8 pb-12 border-b border-charcoal-light/30">
+          {/* Col 1 & 2: Brand Bio */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="relative w-10 h-10 rounded-2xl overflow-hidden bg-white flex-shrink-0 shadow-sm">
-                <Image src="/logo.png" alt="tinykids.pk Logo" fill className="object-cover" />
+            <Link href="/" className="flex items-center space-x-3 group">
+              <div className="relative w-10 h-10 rounded-2xl overflow-hidden bg-white shadow-soft flex-shrink-0">
+                <Image src="/logo.png" alt="tinykids.pk" fill className="object-cover" />
               </div>
-              <span className="text-xl font-black tracking-tight text-white">tinykids.pk</span>
-            </div>
+              <div className="flex flex-col">
+                <span className="font-extrabold text-2xl text-white tracking-tight lowercase">
+                  tinykids<span className="text-brand-light">.pk</span>
+                </span>
+                <span className="text-[10px] text-charcoal-muted font-bold tracking-wider uppercase mt-0.5">
+                  Premium Kids Store
+                </span>
+              </div>
+            </Link>
+
             <p className="text-xs text-charcoal-muted leading-relaxed max-w-sm">
-              Pakistan’s trusted online baby clothing store. Crafting ultra-soft, 100% pure combed cotton
-              newborn starter packs, rompers, frocks, and accessories with nationwide Cash on Delivery.
+              Pakistan&apos;s premier kids boutique specializing in pure combed cotton newborn gift packs,
+              infant rompers, suits, and accessories. Dedicated to softness, comfort, and nationwide delivery.
             </p>
-            <div className="flex items-center space-x-3 pt-1">
-              <a
-                href="https://wa.me/923366895035"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-[#25D366]/20 border border-[#25D366]/40 text-[#25D366] text-xs font-bold hover:bg-[#25D366]/30 transition-colors"
-              >
-                <MessageCircle className="w-3.5 h-3.5" />
-                <span>WhatsApp Helpline: +92 336 6895035</span>
-              </a>
+
+            <div className="space-y-2 pt-2 text-xs text-charcoal-muted">
+              <div className="flex items-center space-x-2">
+                <Phone className="w-3.5 h-3.5 text-brand-light flex-shrink-0" />
+                <a href="tel:+923366895035" className="hover:text-white transition-colors">
+                  +92 336 6895035
+                </a>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Mail className="w-3.5 h-3.5 text-brand-light flex-shrink-0" />
+                <a href="mailto:info@tinykids.pk" className="hover:text-white transition-colors">
+                  info@tinykids.pk
+                </a>
+              </div>
+              <div className="flex items-center space-x-2">
+                <MapPin className="w-3.5 h-3.5 text-brand-light flex-shrink-0" />
+                <span>Karachi, Pakistan — Delivering Nationwide</span>
+              </div>
             </div>
           </div>
 
-          {/* Baby Collections */}
-          <div>
-            <h4 className="text-xs font-black uppercase tracking-wider text-coral mb-3">
-              Baby Collections
-            </h4>
+          {/* Col 3: Collections */}
+          <div className="space-y-3">
+            <span className="text-xs font-black uppercase tracking-wider text-white">Collections</span>
             <ul className="space-y-2 text-xs text-charcoal-muted">
               <li>
-                <Link href="/products" className="hover:text-white transition-colors font-bold text-brand-light">
+                <Link href="/products" className="hover:text-white transition-colors">
                   All Products
                 </Link>
               </li>
               <li>
                 <Link href="/category/newborn-starter-sets" className="hover:text-white transition-colors">
-                  Newborn Starter Sets & Packs
+                  Newborn Starter Sets
                 </Link>
               </li>
               <li>
                 <Link href="/category/bodysuits-rompers" className="hover:text-white transition-colors">
-                  Bodysuits & Rompers
+                  Rompers & Bodysuits
                 </Link>
               </li>
               <li>
                 <Link href="/category/baby-dresses-frocks" className="hover:text-white transition-colors">
-                  Baby Girl Dresses & Frocks
+                  Dresses & Frocks
                 </Link>
               </li>
               <li>
                 <Link href="/category/sweaters-winter-fleece" className="hover:text-white transition-colors">
-                  Sweaters & Winter Fleece
-                </Link>
-              </li>
-              <li>
-                <Link href="/category/baby-caps-hats-socks" className="hover:text-white transition-colors">
-                  Caps, Mittens & Booties
+                  Sweaters & Winterwear
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Customer Care */}
-          <div>
-            <h4 className="text-xs font-black uppercase tracking-wider text-coral mb-3">
-              Customer Support
-            </h4>
+          {/* Col 4: Customer Care */}
+          <div className="space-y-3">
+            <span className="text-xs font-black uppercase tracking-wider text-white">Customer Service</span>
             <ul className="space-y-2 text-xs text-charcoal-muted">
               <li>
                 <Link href="/shipping" className="hover:text-white transition-colors">
-                  Shipping & Delivery Info
+                  Delivery & Shipping
                 </Link>
               </li>
               <li>
                 <Link href="/returns" className="hover:text-white transition-colors">
-                  7-Day Exchange Policy
+                  7-Day Return Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/about" className="hover:text-white transition-colors">
+                  About tinykids.pk
                 </Link>
               </li>
               <li>
                 <Link href="/contact" className="hover:text-white transition-colors">
-                  Contact Customer Care
+                  Contact Helpline
                 </Link>
               </li>
               <li>
                 <Link href="/privacy" className="hover:text-white transition-colors">
-                  Privacy Policy & Terms
+                  Privacy Policy
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Contact Details */}
-          <div>
-            <h4 className="text-xs font-black uppercase tracking-wider text-coral mb-3">
-              Get in Touch
-            </h4>
-            <ul className="space-y-2.5 text-xs text-charcoal-muted">
-              <li className="flex items-center space-x-2">
-                <Phone className="w-3.5 h-3.5 text-coral flex-shrink-0" />
-                <span>+92 336 6895035</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <Mail className="w-3.5 h-3.5 text-coral flex-shrink-0" />
-                <span>info@tinykids.pk</span>
-              </li>
-              <li className="flex items-start space-x-2">
-                <MapPin className="w-3.5 h-3.5 text-coral flex-shrink-0 mt-0.5" />
-                <span>Karachi, Pakistan — Delivering Nationwide</span>
-              </li>
-            </ul>
+          {/* Col 5: Nationwide Coverage */}
+          <div className="space-y-3">
+            <span className="text-xs font-black uppercase tracking-wider text-white">Delivery Across Pakistan</span>
+            <p className="text-[11px] text-charcoal-muted leading-relaxed">
+              Fast Cash on Delivery across 200+ cities in Pakistan:
+            </p>
+            <div className="flex flex-wrap gap-1 pt-1">
+              {CITIES.slice(0, 10).map((city) => (
+                <span
+                  key={city}
+                  className="px-2 py-0.5 rounded-md bg-white/5 text-[10px] text-charcoal-muted border border-white/10"
+                >
+                  {city}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Nationwide City Delivery SEO Tag Cloud */}
-        <div className="pt-8 border-t border-charcoal-light/20 space-y-2">
-          <span className="text-[11px] font-bold text-charcoal-muted block uppercase tracking-wider">
-            Fast Cash on Delivery Across Pakistan:
-          </span>
-          <div className="flex flex-wrap gap-1.5 text-[11px] text-charcoal-muted/80">
-            {CITIES.map((city, idx) => (
-              <span key={city}>
-                {city}
-                {idx < CITIES.length - 1 && ' • '}
-              </span>
-            ))}
-            <span> & 200+ towns nationwide.</span>
-          </div>
-        </div>
-
-        {/* Bottom Copyright & Guarantee */}
-        <div className="pt-6 border-t border-charcoal-light/20 flex flex-col sm:flex-row items-center justify-between text-xs text-charcoal-muted gap-4">
-          <p>© {new Date().getFullYear()} tinykids.pk Pakistan (tinykids.pk). All rights reserved.</p>
+        {/* Bottom Bar */}
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-charcoal-muted gap-4">
+          <p>© {new Date().getFullYear()} tinykids.pk. All rights reserved.</p>
           <div className="flex items-center space-x-4">
-            <span className="flex items-center space-x-1 text-brand-light font-bold">
-              <Truck className="w-3.5 h-3.5" />
-              <span>Cash on Delivery</span>
+            <span className="flex items-center space-x-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-brand-light" />
+              <span>100% Pure Combed Cotton</span>
             </span>
-            <span className="flex items-center space-x-1 text-emerald-400 font-bold">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>100% Guaranteed Quality</span>
+            <span className="flex items-center space-x-1">
+              <Truck className="w-3.5 h-3.5 text-brand-light" />
+              <span>Cash on Delivery</span>
             </span>
           </div>
         </div>
