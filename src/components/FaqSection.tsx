@@ -5,103 +5,95 @@ import { ChevronDown, HelpCircle } from 'lucide-react';
 
 const FAQS = [
   {
-    question: 'How long does delivery take across Pakistan?',
+    question: 'Kitne din me delivery mil jayegi? (How many days for delivery?)',
     answer:
-      'We deliver nationwide across Pakistan via trusted courier partners. Deliveries to major cities like Karachi, Lahore, Islamabad, and Rawalpindi take 2–3 working days. Deliveries to other cities and towns take 3–4 working days.',
+      'Karachi, Lahore, Islamabad aur Rawalpindi me delivery 2 se 3 working days me ho jati hai. Baki tamam cities aur towns me 3 se 4 days lagte hain.',
   },
   {
-    question: 'Is Cash on Delivery (COD) available?',
+    question: 'Kya Cash on Delivery (COD) available hai?',
     answer:
-      'Yes! We offer 100% Cash on Delivery (COD) across Pakistan. You pay in cash when the parcel arrives at your doorstep.',
+      'Jee bilkul! Poore Pakistan me 100% Cash on Delivery (COD) available hai. Courier rider jab parcel aapke ghar le kar aayega, tab aapne cash pay karna hai.',
   },
   {
-    question: 'What sizes are available for newborn babies and infants?',
+    question: 'Kapray 100% cotton hain?',
     answer:
-      'Our baby clothing collection covers newborns up to 24 months, including: 0–3 Months, 3–6 Months, 6–12 Months, and 12–18 Months. Size specifications are listed on each product detail page.',
+      'Jee haan, hamare tamam newborn starter gift sets aur baby rompers 100% pure combed cotton jersey se bane hain jo baby ki soft skin ke liye bilkul safe aur comfortable hain.',
   },
   {
-    question: 'What is your Exchange & Return policy?',
+    question: 'Agar size chota ya bara ho jaye tou exchange ho jayega?',
     answer:
-      'We offer an easy 7-day exchange guarantee. If you face any sizing issues or received a damaged item, simply WhatsApp us at +92 336 6895035 with your order reference number and we will process a replacement.',
+      'Jee haan, 7 days ki easy exchange policy hai. Aap direct hamare WhatsApp number 0336-6895035 par order number share kar ke size exchange karwa sakte hain.',
   },
   {
-    question: 'Are Tiny Kids baby clothes made from 100% pure cotton?',
+    question: 'Free delivery kab milti hai?',
     answer:
-      'Yes! All our baby rompers, starter packs, and sleepsuits are crafted from premium, breathable, 100% pure combed cotton jersey that is hypoallergenic, tagless, and gentle on sensitive newborn skin.',
+      'Rs. 2,999 ya us se zyada ke order par delivery poore Pakistan me bilkul FREE hai.',
   },
 ];
 
 export default function FaqSection() {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [openIdx, setOpenIdx] = useState<number | null>(0);
 
   const toggle = (idx: number) => {
-    setOpenIndex(openIndex === idx ? null : idx);
-  };
-
-  // Structured JSON-LD Schema for Google Rich FAQ Snippets
-  const faqSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: FAQS.map((faq) => ({
-      '@type': 'Question',
-      name: faq.question,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: faq.answer,
-      },
-    })),
+    setOpenIdx(openIdx === idx ? null : idx);
   };
 
   return (
-    <section className="py-12 sm:py-16 bg-cream-50/50">
-      {/* Google FAQPage Schema */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
-
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-8 sm:mb-12">
-          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-brand-soft text-brand text-xs font-bold uppercase tracking-wider mb-2">
-            <HelpCircle className="w-3.5 h-3.5" />
-            <span>Got Questions?</span>
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-charcoal tracking-tight">
-            Frequently Asked Questions
-          </h2>
-          <p className="text-xs sm:text-sm text-charcoal-muted mt-1">
-            Everything you need to know about ordering baby clothes at Tiny Kids Pakistan
-          </p>
+    <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <div className="text-center space-y-2">
+        <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-brand-soft text-brand text-xs font-extrabold">
+          <HelpCircle className="w-3.5 h-3.5" />
+          <span>Frequently Asked Questions</span>
         </div>
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-charcoal tracking-tight">
+          Aapke Sawalat aur Jawab (FAQs)
+        </h2>
+        <p className="text-xs sm:text-sm text-charcoal-muted font-medium">
+          Delivery, payment aur kapron ke mutalliq ahem sawalat
+        </p>
+      </div>
 
-        <div className="space-y-3">
-          {FAQS.map((faq, idx) => {
-            const isOpen = openIndex === idx;
-            return (
-              <div
-                key={idx}
-                className="bg-white rounded-2xl border border-charcoal-border/70 overflow-hidden shadow-soft transition-all"
+      <div className="space-y-3">
+        {FAQS.map((faq, idx) => {
+          const isOpen = openIdx === idx;
+          return (
+            <div
+              key={idx}
+              className="border border-charcoal-border/70 rounded-2xl bg-white overflow-hidden shadow-xs transition-all"
+            >
+              <button
+                onClick={() => toggle(idx)}
+                className="w-full px-5 py-4 text-left flex items-center justify-between gap-4 hover:bg-cream-50 transition-colors"
+                aria-expanded={isOpen}
               >
-                <button
-                  onClick={() => toggle(idx)}
-                  className="w-full p-4 sm:p-5 text-left flex items-center justify-between font-bold text-xs sm:text-sm text-charcoal hover:text-brand transition-colors focus:outline-none"
-                >
-                  <span className="pr-4">{faq.question}</span>
-                  <ChevronDown
-                    className={`w-4 h-4 text-charcoal-muted flex-shrink-0 transition-transform duration-300 ${
-                      isOpen ? 'rotate-180 text-brand' : ''
-                    }`}
-                  />
-                </button>
-                {isOpen && (
-                  <div className="px-4 sm:px-5 pb-4 sm:pb-5 text-xs text-charcoal-muted leading-relaxed border-t border-charcoal-border/40 pt-3">
-                    {faq.answer}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                <span className="text-xs sm:text-sm font-extrabold text-charcoal">{faq.question}</span>
+                <ChevronDown
+                  className={`w-4 h-4 text-charcoal-muted flex-shrink-0 transition-transform duration-200 ${
+                    isOpen ? 'rotate-180 text-brand' : ''
+                  }`}
+                />
+              </button>
+              {isOpen && (
+                <div className="px-5 pb-4 pt-1 text-xs text-charcoal-muted leading-relaxed font-medium border-t border-charcoal-border/40">
+                  {faq.answer}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* WhatsApp Help Prompt */}
+      <div className="p-4 rounded-2xl bg-cream-100/70 border border-charcoal-border/60 text-center space-y-2 text-xs">
+        <span className="font-bold text-charcoal block">Koi aur sawal hai? WhatsApp par direct rabta karein:</span>
+        <a
+          href="https://wa.me/923366895035"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center space-x-1.5 px-4 py-2 bg-[#25D366] text-white rounded-xl font-bold shadow-xs hover:bg-[#20bd5a] transition-colors"
+        >
+          <span>Chat on WhatsApp: 0336-6895035</span>
+        </a>
       </div>
     </section>
   );

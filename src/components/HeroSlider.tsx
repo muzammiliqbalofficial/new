@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, ChevronLeft, ChevronRight, Sparkles, ShieldCheck, Truck, Star } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, Sparkles, ShieldCheck, Truck } from 'lucide-react';
 
 interface Slide {
   id: number;
@@ -25,69 +25,69 @@ interface Slide {
 const SLIDES: Slide[] = [
   {
     id: 1,
-    tag: 'Hospital Bag & Newborn Starter Sets',
-    title: 'Pure Comfort for',
-    highlight: 'Little Miracles',
+    tag: 'Hospital Bag & Gift Packs',
+    title: 'Pure Cotton Clothes for',
+    highlight: 'Newborn Babies',
     subtitle:
-      '100% combed cotton newborn sets, hospital starter packs, and gift boxes. Ultra-soft on delicate baby skin with nationwide Cash on Delivery.',
-    primaryCtaText: 'Shop Starter Sets',
+      '100% pure cotton newborn gift starter sets, shirt pajama sets, caps and bibs. Super soft on baby skin with Cash on Delivery all over Pakistan.',
+    primaryCtaText: 'Shop Newborn Sets',
     primaryCtaHref: '/category/newborn-starter-sets',
-    secondaryCtaText: 'View All Products',
+    secondaryCtaText: 'View All Clothes',
     secondaryCtaHref: '/products',
-    badge: 'HOT SELLER',
+    badge: 'BEST SELLER',
     image: 'https://pub-4327055644f945ce92583334944f4675.r2.dev/496335818-1-1df0f6c5-1400w.webp',
-    alt: 'Newborn Baby Starter Set Pakistan - tinykids.pk',
+    alt: 'Newborn Baby Clothes Pakistan - tinykids.pk',
     bgGradient: 'from-cream-100 via-cream-50 to-white',
     accentColor: 'text-brand',
   },
   {
     id: 2,
-    tag: 'Daily Playwear & Nightwear',
-    title: 'Ultra-Soft Cotton',
+    tag: 'Daily Wear Cotton Rompers',
+    title: 'Soft & Comfortable',
     highlight: 'Baby Rompers',
     subtitle:
-      'Breathable bodysuits and one-piece rompers with easy-snap bottoms for quick, fuss-free diaper changes day and night.',
-    primaryCtaText: 'Explore Rompers',
+      'Breathable pure cotton baby rompers and bodysuits with easy buttons for quick diaper change. Perfect for 0 to 24 months baby boy and girl.',
+    primaryCtaText: 'Shop Baby Rompers',
     primaryCtaHref: '/category/bodysuits-rompers',
-    secondaryCtaText: 'Shop 0-24M',
+    secondaryCtaText: 'View 0-24M Items',
     secondaryCtaHref: '/products',
     badge: '100% PURE COTTON',
     image: 'https://pub-4327055644f945ce92583334944f4675.r2.dev/749729864-1-66ea17bb-700w.webp',
-    alt: 'Baby Boy and Girl Rompers Pakistan - tinykids.pk',
+    alt: 'Baby Rompers Online Pakistan - tinykids.pk',
     bgGradient: 'from-brand-soft/40 via-cream-50 to-white',
     accentColor: 'text-brand',
   },
   {
     id: 3,
-    tag: 'Winter Warmth Collection',
-    title: 'Snuggle-Ready',
-    highlight: 'Sweaters & Fleece',
+    tag: 'Winter Collection',
+    title: 'Warm & Cozy',
+    highlight: 'Baby Sweaters & Suits',
     subtitle:
-      'Keep your newborn warm and cozy with plush fleece sets, knitted sweaters, and soft caps crafted for colder days.',
-    primaryCtaText: 'Shop Winterwear',
+      'Keep your baby warm and healthy in winter with soft fleece suits, knitted sweaters, warm caps and booties.',
+    primaryCtaText: 'Shop Winter Clothes',
     primaryCtaHref: '/category/sweaters-winter-fleece',
     secondaryCtaText: 'Caps & Booties',
     secondaryCtaHref: '/category/baby-caps-hats-socks',
-    badge: 'COZY ESSENTIALS',
+    badge: 'WINTER SPECIAL',
     image: 'https://pub-4327055644f945ce92583334944f4675.r2.dev/944275199-1-b163ecbd-700w.webp',
-    alt: 'Baby Winter Sweaters & Fleece Sets Pakistan - tinykids.pk',
+    alt: 'Baby Sweaters Pakistan - tinykids.pk',
     bgGradient: 'from-sage-soft/50 via-cream-50 to-white',
     accentColor: 'text-sage-dark',
   },
   {
     id: 4,
-    tag: 'Special Moments & Occasions',
-    title: 'Charming Festive',
-    highlight: 'Dresses & Coty Suits',
+    tag: 'Party & Eid Wear',
+    title: 'Beautiful Baby Baba',
+    highlight: 'Suits & Frocks',
     subtitle:
-      'Picture-perfect Eid, aqeeqah, and family party outfits designed with gentle fabrics that keep baby happy and looking adorable.',
-    primaryCtaText: 'View Dresses & Suits',
+      'Charming Coty style suits, baby dresses, and party frocks for Eid, aqeeqah, and family functions.',
+    primaryCtaText: 'View Party Wear',
     primaryCtaHref: '/category/baby-dresses-frocks',
-    secondaryCtaText: 'Starter Packs',
+    secondaryCtaText: 'Gift Sets',
     secondaryCtaHref: '/category/newborn-starter-sets',
-    badge: 'OCCASION WEAR',
+    badge: 'PARTY & EID WEAR',
     image: 'https://pub-4327055644f945ce92583334944f4675.r2.dev/885085540-1-5987be74-700w.webp',
-    alt: 'Baby Girl Dresses and Coty Suits Pakistan - tinykids.pk',
+    alt: 'Baby Party Dresses Pakistan - tinykids.pk',
     bgGradient: 'from-coral-soft/50 via-cream-50 to-white',
     accentColor: 'text-coral-dark',
   },
@@ -107,7 +107,6 @@ export default function HeroSlider() {
     setCurrentSlide((prev) => (prev - 1 + SLIDES.length) % SLIDES.length);
   }, []);
 
-  // Auto-slide every 5.5s unless hovered
   useEffect(() => {
     if (isPaused) return;
     const timer = setInterval(() => {
@@ -116,7 +115,6 @@ export default function HeroSlider() {
     return () => clearInterval(timer);
   }, [isPaused, nextSlide]);
 
-  // Touch Swipe handlers
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.targetTouches[0].clientX;
   };
@@ -141,7 +139,7 @@ export default function HeroSlider() {
 
   return (
     <section
-      aria-label="Featured Collections"
+      aria-label="Featured Baby Clothes"
       className="relative overflow-hidden border-b border-charcoal-border/50 select-none transition-colors duration-700"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
@@ -149,21 +147,16 @@ export default function HeroSlider() {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Background Gradient */}
-      <div
-        className={`bg-gradient-to-br ${slide.bgGradient} py-10 sm:py-16 lg:py-20 transition-all duration-700`}
-      >
+      <div className={`bg-gradient-to-br ${slide.bgGradient} py-10 sm:py-16 lg:py-20 transition-all duration-700`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
             {/* Left Content Column */}
             <div className="lg:col-span-7 space-y-4 sm:space-y-6 text-center lg:text-left z-10">
-              {/* Category Pill Tag */}
               <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-white/80 backdrop-blur-xs border border-charcoal-border/60 text-charcoal text-xs font-bold shadow-xs">
                 <Sparkles className="w-3.5 h-3.5 text-brand" />
                 <span>{slide.tag}</span>
               </div>
 
-              {/* Title with Animated Slide Key */}
               <h1
                 key={`title-${slide.id}`}
                 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-charcoal tracking-tight leading-tight transition-all duration-500"
@@ -172,7 +165,6 @@ export default function HeroSlider() {
                 <span className={slide.accentColor}>{slide.highlight}</span>
               </h1>
 
-              {/* Description */}
               <p
                 key={`desc-${slide.id}`}
                 className="text-xs sm:text-base text-charcoal-muted max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium"
@@ -180,7 +172,6 @@ export default function HeroSlider() {
                 {slide.subtitle}
               </p>
 
-              {/* Action Buttons */}
               <div className="pt-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
                 <Link
                   href={slide.primaryCtaHref}
@@ -207,7 +198,7 @@ export default function HeroSlider() {
                 </span>
                 <span className="flex items-center space-x-1.5">
                   <ShieldCheck className="w-4 h-4 text-sage-dark" />
-                  <span>Cash on Delivery</span>
+                  <span>Cash on Delivery in Pakistan</span>
                 </span>
               </div>
             </div>
@@ -227,7 +218,6 @@ export default function HeroSlider() {
                   />
                 </div>
 
-                {/* Hot Badge */}
                 <div className="absolute top-4 right-4 bg-brand text-white font-extrabold text-[10px] sm:text-xs px-3 py-1 rounded-full shadow-md tracking-wider uppercase">
                   {slide.badge}
                 </div>

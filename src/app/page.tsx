@@ -71,7 +71,7 @@ export default async function HomePage() {
       {/* 1. Interactive E-Commerce Hero Slider */}
       <HeroSlider />
 
-      {/* 2. Infinite Continuous Auto-Scrolling Ticker (Cash on Delivery All Over Pakistan) */}
+      {/* 2. Infinite Continuous Auto-Scrolling Ticker */}
       <MarqueeTicker />
 
       {/* 3. Visual Category Explorer */}
@@ -82,10 +82,10 @@ export default async function HomePage() {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-charcoal-border/50 pb-4">
           <div>
             <span className="text-[11px] font-extrabold uppercase tracking-wider text-brand block">
-              Hospital Bag & Welcome Essentials
+              Hospital Bag & Gift Packs
             </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-charcoal tracking-tight">
-              Newborn Starter Sets & Packs
+              Newborn Starter Sets & Gift Packs
             </h2>
           </div>
           <Link
@@ -112,10 +112,10 @@ export default async function HomePage() {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-charcoal-border/50 pb-4">
           <div>
             <span className="text-[11px] font-extrabold uppercase tracking-wider text-brand block">
-              Daily Comfort & Playwear
+              Daily Wear Baby Clothes
             </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-charcoal tracking-tight">
-              Infant Rompers & Bodysuits
+              Baby Baba Rompers & Bodysuits
             </h2>
           </div>
           <Link
@@ -134,7 +134,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 7. SEO Keywords Rich Content Block */}
+      {/* 7. Simple Pakistani SEO Content Block */}
       <section className="bg-cream-100/60 py-10 border-y border-charcoal-border/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
           <h2 className="text-lg sm:text-xl font-extrabold text-charcoal tracking-tight">
@@ -142,15 +142,13 @@ export default async function HomePage() {
           </h2>
           <div className="text-xs text-charcoal-muted leading-relaxed space-y-2 font-medium">
             <p>
-              Welcome to <strong>tinykids.pk</strong>, your premier destination for high-quality, ultra-soft,
-              and affordable baby clothing. Whether you are preparing your hospital bag with our 10-piece newborn starter
-              gift packs, shopping for breathable cotton baby rompers, or picking adorable baby girl dresses and baby boy
-              coty suits, we guarantee 100% pure combed cotton fabrics that keep your little ones cozy and comfortable.
+              Welcome to <strong>tinykids.pk</strong>, Pakistan ka trusted online baby store. Hum newborn babies ke liye
+              100% pure cotton gift starter sets, shirt pajama packs, baby baba rompers, baby girl frocks aur winter sweaters
+              provide karte hain jo baby ki sensitive skin ke liye nihayat soft aur comfortable hain.
             </p>
             <p>
-              We deliver nationwide across Pakistan including Karachi, Lahore, Islamabad, Rawalpindi, Faisalabad, Multan,
-              Peshawar, Quetta, and Sialkot with full <strong>Cash on Delivery (COD)</strong> and a hassle-free 7-day
-              exchange guarantee.
+              Karachi, Lahore, Islamabad, Rawalpindi, Faisalabad, Multan, Peshawar aur poore Pakistan ke 200+ cities me
+              <strong> Cash on Delivery (COD)</strong> aur 7-day easy size exchange guarantee ke sath fast delivery available hai.
             </p>
           </div>
         </div>
