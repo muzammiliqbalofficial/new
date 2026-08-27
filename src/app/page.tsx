@@ -134,7 +134,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 7. Simple Pakistani SEO Content Block */}
+      {/* 7. Simple & Professional SEO Content Block */}
       <section className="bg-cream-100/60 py-10 border-y border-charcoal-border/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
           <h2 className="text-lg sm:text-xl font-extrabold text-charcoal tracking-tight">
@@ -142,13 +142,13 @@ export default async function HomePage() {
           </h2>
           <div className="text-xs text-charcoal-muted leading-relaxed space-y-2 font-medium">
             <p>
-              Welcome to <strong>tinykids.pk</strong>, Pakistan ka trusted online baby store. Hum newborn babies ke liye
-              100% pure cotton gift starter sets, shirt pajama packs, baby baba rompers, baby girl frocks aur winter sweaters
-              provide karte hain jo baby ki sensitive skin ke liye nihayat soft aur comfortable hain.
+              Welcome to <strong>tinykids.pk</strong>, your trusted online destination for premium newborn baby clothing.
+              We specialize in 100% pure combed cotton gift sets, hospital starter packs, baby rompers, suits, and frocks
+              designed to keep your little ones soft, safe, and comfortable.
             </p>
             <p>
-              Karachi, Lahore, Islamabad, Rawalpindi, Faisalabad, Multan, Peshawar aur poore Pakistan ke 200+ cities me
-              <strong> Cash on Delivery (COD)</strong> aur 7-day easy size exchange guarantee ke sath fast delivery available hai.
+              Enjoy fast delivery across Karachi, Lahore, Islamabad, Rawalpindi, Faisalabad, Multan, Peshawar, and 200+
+              cities with full <strong>Cash on Delivery (COD)</strong> and a hassle-free 7-day exchange policy.
             </p>
           </div>
         </div>

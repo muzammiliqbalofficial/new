@@ -1,33 +1,33 @@
 ﻿'use client';
 
 import React, { useState } from 'react';
-import { ChevronDown, HelpCircle } from 'lucide-react';
+import { ChevronDown, HelpCircle, Phone } from 'lucide-react';
 
 const FAQS = [
   {
-    question: 'Kitne din me delivery mil jayegi? (How many days for delivery?)',
+    question: 'How many days does delivery take across Pakistan?',
     answer:
-      'Karachi, Lahore, Islamabad aur Rawalpindi me delivery 2 se 3 working days me ho jati hai. Baki tamam cities aur towns me 3 se 4 days lagte hain.',
+      'Deliveries to major cities like Karachi, Lahore, Islamabad, and Rawalpindi take 2 to 3 working days. Deliveries to all other cities and towns across Pakistan take 3 to 4 working days.',
   },
   {
-    question: 'Kya Cash on Delivery (COD) available hai?',
+    question: 'Is Cash on Delivery (COD) available?',
     answer:
-      'Jee bilkul! Poore Pakistan me 100% Cash on Delivery (COD) available hai. Courier rider jab parcel aapke ghar le kar aayega, tab aapne cash pay karna hai.',
+      'Yes! We offer 100% Cash on Delivery nationwide. You pay in cash directly to the courier rider when your parcel arrives at your doorstep.',
   },
   {
-    question: 'Kapray 100% cotton hain?',
+    question: 'Are the baby clothes 100% pure cotton?',
     answer:
-      'Jee haan, hamare tamam newborn starter gift sets aur baby rompers 100% pure combed cotton jersey se bane hain jo baby ki soft skin ke liye bilkul safe aur comfortable hain.',
+      'Yes, all our newborn starter gift sets, rompers, and suits are made with 100% pure combed cotton to ensure maximum softness and safety for delicate baby skin.',
   },
   {
-    question: 'Agar size chota ya bara ho jaye tou exchange ho jayega?',
+    question: 'Can I exchange the size if it does not fit?',
     answer:
-      'Jee haan, 7 days ki easy exchange policy hai. Aap direct hamare WhatsApp number 0336-6895035 par order number share kar ke size exchange karwa sakte hain.',
+      'Yes, we offer a hassle-free 7-day exchange policy. Simply message our WhatsApp helpline at 0336-6895035 with your order reference number and we will exchange the size for you.',
   },
   {
-    question: 'Free delivery kab milti hai?',
+    question: 'How do I qualify for Free Shipping?',
     answer:
-      'Rs. 2,999 ya us se zyada ke order par delivery poore Pakistan me bilkul FREE hai.',
+      'Free shipping is automatically applied on all orders of Rs. 2,999 or more anywhere in Pakistan.',
   },
 ];
 
@@ -46,10 +46,10 @@ export default function FaqSection() {
           <span>Frequently Asked Questions</span>
         </div>
         <h2 className="text-2xl sm:text-3xl font-extrabold text-charcoal tracking-tight">
-          Aapke Sawalat aur Jawab (FAQs)
+          Questions & Answers
         </h2>
         <p className="text-xs sm:text-sm text-charcoal-muted font-medium">
-          Delivery, payment aur kapron ke mutalliq ahem sawalat
+          Everything you need to know about shipping, payments, and sizing
         </p>
       </div>
 
@@ -85,13 +85,14 @@ export default function FaqSection() {
 
       {/* WhatsApp Help Prompt */}
       <div className="p-4 rounded-2xl bg-cream-100/70 border border-charcoal-border/60 text-center space-y-2 text-xs">
-        <span className="font-bold text-charcoal block">Koi aur sawal hai? WhatsApp par direct rabta karein:</span>
+        <span className="font-bold text-charcoal block">Have more questions? Contact our team on WhatsApp:</span>
         <a
           href="https://wa.me/923366895035"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center space-x-1.5 px-4 py-2 bg-[#25D366] text-white rounded-xl font-bold shadow-xs hover:bg-[#20bd5a] transition-colors"
         >
+          <Phone className="w-3.5 h-3.5" />
           <span>Chat on WhatsApp: 0336-6895035</span>
         </a>
       </div>
