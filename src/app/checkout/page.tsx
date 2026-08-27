@@ -8,6 +8,7 @@ import { Truck, ShieldCheck, ShoppingBag, ArrowLeft, CheckCircle2 } from 'lucide
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/formatters';
 import { sendOrderEmailNotification } from '@/lib/order-notifier';
+import { supabase } from '@/lib/supabase';
 
 const POPULAR_CITIES = [
   'Karachi',
@@ -126,19 +127,12 @@ export default function CheckoutPage() {
           status: 'new',
         };
 
-        const res = await fetch('https://qdouuizitxiiumgkgnyt.supabase.co/rest/v1/orders', {
-          method: 'POST',
-          headers: {
-            'apikey': 'sb_secret_d5OHSu1-JX2kUnq7HZIp3g_rEsECr0Y',
-            'Authorization': 'Bearer sb_secret_d5OHSu1-JX2kUnq7HZIp3g_rEsECr0Y',
-            'Content-Type': 'application/json',
-            'Prefer': 'return=representation',
-          },
-          body: JSON.stringify(orderPayload),
-        });
+        const { data: insertedOrders, error: orderErr } = await supabase
+          .from('orders')
+          .insert(orderPayload)
+          .select();
 
-        if (res.ok) {
-          const insertedOrders = await res.json();
+        if (!orderErr) {
           const newOrderId = insertedOrders?.[0]?.id;
 
           if (newOrderId && items.length > 0) {
@@ -150,15 +144,7 @@ export default function CheckoutPage() {
               line_total: (Number(i.price) || 0) * (Number(i.quantity) || 1),
             }));
 
-            await fetch('https://qdouuizitxiiumgkgnyt.supabase.co/rest/v1/order_items', {
-              method: 'POST',
-              headers: {
-                'apikey': 'sb_secret_d5OHSu1-JX2kUnq7HZIp3g_rEsECr0Y',
-                'Authorization': 'Bearer sb_secret_d5OHSu1-JX2kUnq7HZIp3g_rEsECr0Y',
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(itemPayloads),
-            });
+            await supabase.from('order_items').insert(itemPayloads);
           }
         }
       } catch (dbErr) {
