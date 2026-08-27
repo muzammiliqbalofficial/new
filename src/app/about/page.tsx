@@ -5,7 +5,7 @@ import { Sparkles, Heart, ShieldCheck, Truck } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'About Us',
-  description: 'Learn about Tiny Kids Pakistan — your trusted source for premium baby clothing and newborn essentials.',
+  description: 'Learn about tinykids.pk — your trusted source for premium baby clothing and newborn essentials.',
 };
 
 export default function AboutPage() {
@@ -20,13 +20,13 @@ export default function AboutPage() {
             Crafting Comfort for Pakistan’s Littlest Angels
           </h1>
           <div className="inline-block p-2 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-800">
-            📌 <em>Client Note: This is placeholder copy. You can update this text anytime from the admin dashboard settings or request customized copy.</em>
+             <em>Client Note: This is placeholder copy. You can update this text anytime from the admin dashboard settings or request customized copy.</em>
           </div>
         </div>
 
         <div className="prose prose-sm sm:prose-base text-charcoal-light leading-relaxed space-y-4">
           <p>
-            Welcome to <strong>Tiny Kids</strong>! Founded with a mother&apos;s love and dedication, we started with a single promise: to provide Pakistani parents with high-quality, gentle, and affordable newborn clothing that puts comfort and safety first.
+            Welcome to <strong>tinykids.pk</strong>! Founded with a mother&apos;s love and dedication, we started with a single promise: to provide Pakistani parents with high-quality, gentle, and affordable newborn clothing that puts comfort and safety first.
           </p>
           <p>
             After serving thousands of happy families across Pakistan, our curated catalogue includes complete newborn welcome starter sets, breathable cotton rompers, bodysuits, swaddles, blankets, and nursery essentials.

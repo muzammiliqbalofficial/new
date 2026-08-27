@@ -46,7 +46,7 @@ function SuccessContent() {
           Order Successfully Recorded
         </span>
         <h1 className="text-2xl sm:text-3xl font-black text-charcoal tracking-tight">
-          Thank You, {customerName}! 🎉
+          Thank You, {customerName}! 
         </h1>
         <p className="text-xs sm:text-sm text-charcoal-muted max-w-md mx-auto leading-relaxed">
           Your order has been forwarded to our dispatch team. We will contact you on your mobile number to confirm before shipping your baby parcel.

@@ -23,10 +23,10 @@ export async function sendOrderEmailNotification(order: OrderNotificationPayload
       .join('\n');
 
     const payload = {
-      _subject: `🚨 New Tiny Kids Order #${order.order_number} — ${order.customer_name} (${formatPrice(order.total)})`,
+      _subject: ` New tinykids.pk Order #${order.order_number} — ${order.customer_name} (${formatPrice(order.total)})`,
       _template: 'table',
       _captcha: 'false',
-      Store_Name: 'Tiny Kids Pakistan (tinykids.pk)',
+      Store_Name: 'tinykids.pk (tinykids.pk)',
       Order_Number: order.order_number,
       Customer_Name: order.customer_name,
       Customer_Phone: order.customer_phone,

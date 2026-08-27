@@ -23,7 +23,7 @@ export default function ShippingPage() {
             Shipping & Delivery Policy
           </h1>
           <div className="inline-block p-2 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-800">
-            📌 <em>Client Note: This is placeholder policy copy tailored for Pakistani e-commerce. You may customize shipping rates and courier timelines.</em>
+             <em>Client Note: This is placeholder policy copy tailored for Pakistani e-commerce. You may customize shipping rates and courier timelines.</em>
           </div>
         </div>
 

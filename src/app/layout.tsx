@@ -3,7 +3,7 @@ import './globals.css';
 import StorefrontChrome from '@/components/StorefrontChrome';
 
 export const viewport: Viewport = {
-  themeColor: '#7C3AED',
+  themeColor: '#3D6A52',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
@@ -12,8 +12,8 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL('https://tinykids.pk'),
   title: {
-    default: 'Tiny Kids — Newborn Baby Clothes & Rompers Online in Pakistan',
-    template: '%s | Tiny Kids Pakistan',
+    default: 'tinykids.pk — Newborn Baby Clothes & Rompers Online in Pakistan',
+    template: '%s | tinykids.pk',
   },
   description:
     'Shop premium newborn baby clothes, rompers, baby gift starter sets, and infant dresses online in Pakistan. 100% pure cotton, fast Cash on Delivery across Karachi, Lahore, Islamabad & nationwide.',
@@ -27,12 +27,12 @@ export const metadata: Metadata = {
     'Baby girl dresses Karachi',
     'Baby gift packs Pakistan',
     'Cash on delivery baby shop Pakistan',
-    'Tiny Kids Pakistan',
+    'tinykids.pk',
     'Branny baby clothes alternative',
   ],
-  authors: [{ name: 'Tiny Kids', url: 'https://tinykids.pk' }],
-  creator: 'Tiny Kids',
-  publisher: 'Tiny Kids',
+  authors: [{ name: 'tinykids.pk', url: 'https://tinykids.pk' }],
+  creator: 'tinykids.pk',
+  publisher: 'tinykids.pk',
   formatDetection: {
     telephone: true,
     email: true,
@@ -45,8 +45,8 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_PK',
     url: 'https://tinykids.pk',
-    siteName: 'Tiny Kids Pakistan',
-    title: 'Tiny Kids — Newborn Baby Clothes & Rompers Online in Pakistan',
+    siteName: 'tinykids.pk',
+    title: 'tinykids.pk — Newborn Baby Clothes & Rompers Online in Pakistan',
     description:
       'Explore soft, pure cotton newborn starter sets, baby rompers, and dresses. Cash on Delivery across Pakistan.',
     images: [
@@ -54,13 +54,13 @@ export const metadata: Metadata = {
         url: 'https://tinykids.pk/logo.png',
         width: 1200,
         height: 630,
-        alt: 'Tiny Kids — Premium Baby Clothes Pakistan',
+        alt: 'tinykids.pk — Premium Baby Clothes Pakistan',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Tiny Kids — Newborn Baby Clothes in Pakistan',
+    title: 'tinykids.pk — Newborn Baby Clothes in Pakistan',
     description:
       'Pure cotton newborn starter packs, rompers, and infant outfits with Cash on Delivery in Pakistan.',
     images: ['https://tinykids.pk/logo.png'],
@@ -85,7 +85,7 @@ const globalSchema = {
     {
       '@type': 'Organization',
       '@id': 'https://tinykids.pk/#organization',
-      name: 'Tiny Kids',
+      name: 'tinykids.pk',
       url: 'https://tinykids.pk',
       logo: {
         '@type': 'ImageObject',
@@ -109,7 +109,7 @@ const globalSchema = {
       '@type': 'WebSite',
       '@id': 'https://tinykids.pk/#website',
       url: 'https://tinykids.pk',
-      name: 'Tiny Kids',
+      name: 'tinykids.pk',
       publisher: {
         '@id': 'https://tinykids.pk/#organization',
       },
@@ -133,7 +133,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800"
           rel="stylesheet"
         />
         <script

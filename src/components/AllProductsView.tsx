@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { Search, SlidersHorizontal, ArrowUpDown, ChevronRight, Sparkles } from 'lucide-react';
+import { Search, SlidersHorizontal, ArrowUpDown, ChevronRight, } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
 import { Product } from '@/lib/types';
 
@@ -12,12 +12,12 @@ interface Props {
 
 const CATEGORY_FILTERS = [
   { label: 'All Items', slug: 'all' },
-  { label: '🍼 Starter Sets', slug: 'newborn-starter-sets' },
-  { label: '👶 Rompers', slug: 'bodysuits-rompers' },
-  { label: '👗 Dresses & Frocks', slug: 'baby-dresses-frocks' },
-  { label: '🧶 Sweaters', slug: 'sweaters-winter-fleece' },
-  { label: '🧢 Caps & Booties', slug: 'baby-caps-hats-socks' },
-  { label: '👕 Tops & Sets', slug: 'tops-bottoms' },
+  { label: 'Starter Sets', slug: 'newborn-starter-sets' },
+  { label: 'Rompers', slug: 'bodysuits-rompers' },
+  { label: 'Dresses & Frocks', slug: 'baby-dresses-frocks' },
+  { label: 'Sweaters', slug: 'sweaters-winter-fleece' },
+  { label: 'Caps & Booties', slug: 'baby-caps-hats-socks' },
+  { label: 'Tops & Sets', slug: 'tops-bottoms' },
 ];
 
 export default function AllProductsView({ initialProducts }: Props) {
@@ -144,7 +144,7 @@ export default function AllProductsView({ initialProducts }: Props) {
         {/* Products Grid */}
         {filteredProducts.length === 0 ? (
           <div className="py-16 text-center space-y-4 bg-cream-50/50 rounded-3xl border border-charcoal-border/60">
-            <Sparkles className="w-10 h-10 text-charcoal-muted mx-auto" />
+            <Search className="w-10 h-10 text-charcoal-muted mx-auto" />
             <h3 className="text-base font-bold text-charcoal">No matching products found</h3>
             <p className="text-xs text-charcoal-muted max-w-sm mx-auto">
               Try adjusting your category filter or search query to find baby clothes.

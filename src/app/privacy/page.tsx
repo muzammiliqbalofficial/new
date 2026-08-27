@@ -5,7 +5,7 @@ import { ShieldCheck, Lock } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
-  description: 'Learn how Tiny Kids protects your personal and order data.',
+  description: 'Learn how tinykids.pk protects your personal and order data.',
 };
 
 export default function PrivacyPolicyPage() {
@@ -20,13 +20,13 @@ export default function PrivacyPolicyPage() {
             Privacy Policy
           </h1>
           <div className="inline-block p-2 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-800">
-            📌 <em>Client Note: Standard e-commerce privacy policy protecting customer checkout and delivery data.</em>
+             <em>Client Note: Standard e-commerce privacy policy protecting customer checkout and delivery data.</em>
           </div>
         </div>
 
         <div className="space-y-6 text-xs sm:text-sm text-charcoal-light leading-relaxed">
           <p>
-            At <strong>Tiny Kids</strong>, we respect your privacy and are committed to safeguarding the personal information you share with us when placing an order or communicating with our team.
+            At <strong>tinykids.pk</strong>, we respect your privacy and are committed to safeguarding the personal information you share with us when placing an order or communicating with our team.
           </p>
 
           <section className="space-y-2">

@@ -123,7 +123,7 @@ export default async function HomePage() {
                 <div className="relative w-full h-full">
                   <Image
                     src="https://pub-4327055644f945ce92583334944f4675.r2.dev/496335818-1-1df0f6c5-1400w.webp"
-                    alt="Newborn Baby Gift Starter Set Pakistan - Tiny Kids"
+                    alt="Newborn Baby Gift Starter Set Pakistan - tinykids.pk"
                     fill
                     priority
                     sizes="(max-width: 768px) 100vw, 50vw"
@@ -203,11 +203,11 @@ export default async function HomePage() {
       <section className="bg-cream-100/60 py-10 border-y border-charcoal-border/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
           <h2 className="text-lg sm:text-xl font-black text-charcoal tracking-tight">
-            Buy Newborn Baby Clothes Online in Pakistan — Tiny Kids™
+            Buy Newborn Baby Clothes Online in Pakistan — tinykids.pk
           </h2>
           <div className="text-xs text-charcoal-muted leading-relaxed space-y-2">
             <p>
-              Welcome to <strong>Tiny Kids Pakistan</strong>, your premier destination for high-quality, ultra-soft,
+              Welcome to <strong>tinykids.pk</strong>, your premier destination for high-quality, ultra-soft,
               and affordable baby clothing. Whether you are preparing your hospital bag with our 10-piece newborn starter
               gift packs, shopping for breathable cotton baby rompers, or picking adorable baby girl dresses and baby boy
               coty suits, we guarantee 100% pure combed cotton fabrics that keep your little ones cozy and comfortable.

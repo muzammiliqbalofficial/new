@@ -5,7 +5,7 @@ import { MessageCircle } from 'lucide-react';
 
 export default function FloatingWhatsApp() {
   const whatsappNumber = '923366895035';
-  const defaultMsg = 'Assalam o Alaikum Tiny Kids! 👶 I want to inquire about baby clothes and place an order.';
+  const defaultMsg = 'Assalam o Alaikum tinykids.pk!  I want to inquire about baby clothes and place an order.';
   const link = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(defaultMsg)}`;
 
   return (
@@ -20,7 +20,7 @@ export default function FloatingWhatsApp() {
         href={link}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Chat with Tiny Kids on WhatsApp"
+        aria-label="Chat with tinykids.pk on WhatsApp"
         className="relative flex items-center justify-center w-14 h-14 bg-[#25D366] hover:bg-[#20ba59] text-white rounded-full shadow-2xl transition-transform duration-300 hover:scale-110 active:scale-95 focus:outline-none"
       >
         {/* Pulse ripple */}

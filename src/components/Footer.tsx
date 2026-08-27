@@ -32,9 +32,9 @@ export default function Footer() {
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center space-x-3">
               <div className="relative w-10 h-10 rounded-2xl overflow-hidden bg-white flex-shrink-0 shadow-sm">
-                <Image src="/logo.png" alt="Tiny Kids Logo" fill className="object-cover" />
+                <Image src="/logo.png" alt="tinykids.pk Logo" fill className="object-cover" />
               </div>
-              <span className="text-xl font-black tracking-tight text-white">Tiny Kids™</span>
+              <span className="text-xl font-black tracking-tight text-white">tinykids.pk</span>
             </div>
             <p className="text-xs text-charcoal-muted leading-relaxed max-w-sm">
               Pakistan’s trusted online baby clothing store. Crafting ultra-soft, 100% pure combed cotton
@@ -161,7 +161,7 @@ export default function Footer() {
 
         {/* Bottom Copyright & Guarantee */}
         <div className="pt-6 border-t border-charcoal-light/20 flex flex-col sm:flex-row items-center justify-between text-xs text-charcoal-muted gap-4">
-          <p>© {new Date().getFullYear()} Tiny Kids Pakistan (tinykids.pk). All rights reserved.</p>
+          <p>© {new Date().getFullYear()} tinykids.pk Pakistan (tinykids.pk). All rights reserved.</p>
           <div className="flex items-center space-x-4">
             <span className="flex items-center space-x-1 text-brand-light font-bold">
               <Truck className="w-3.5 h-3.5" />

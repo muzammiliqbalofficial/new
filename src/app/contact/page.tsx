@@ -5,7 +5,7 @@ import { Phone, Mail, MapPin, MessageCircle, Clock } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Contact Us',
-  description: 'Get in touch with Tiny Kids customer support via WhatsApp, phone, or email.',
+  description: 'Get in touch with tinykids.pk customer support via WhatsApp, phone, or email.',
 };
 
 export default function ContactPage() {

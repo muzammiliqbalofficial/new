@@ -77,7 +77,7 @@ export function buildWhatsAppEnquiryLink(
   whatsappNumber?: string
 ): string {
   const phone = (whatsappNumber || '923366895035').replace(/[^0-9]/g, '');
-  const message = `Hello Tiny Kids! I would like to inquire about:\n\n*${productName}*\n${productUrl}\n\nPlease share details and available sizes.`;
+  const message = `Hello tinykids.pk! I would like to inquire about:\n\n*${productName}*\n${productUrl}\n\nPlease share details and available sizes.`;
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }
 
@@ -93,7 +93,7 @@ export function buildWhatsAppOrderConfirmationLink(
 ): string {
   const phone = (whatsappNumber || '923366895035').replace(/[^0-9]/g, '');
   const itemsText = items.map((i) => `• ${i.name} (x${i.quantity})`).join('\n');
-  const message = `🛍️ *NEW ORDER CONFIRMATION — TINY KIDS*\n\nOrder Reference: *${orderNumber}*\nCustomer Name: *${customerName}*\n\nItems:\n${itemsText}\n\nTotal Amount: *${formatPrice(total)}*\nPayment: *Cash on Delivery (COD)*\n\nPlease confirm my order. Thank you!`;
+  const message = `️ *NEW ORDER CONFIRMATION — TINY KIDS*\n\nOrder Reference: *${orderNumber}*\nCustomer Name: *${customerName}*\n\nItems:\n${itemsText}\n\nTotal Amount: *${formatPrice(total)}*\nPayment: *Cash on Delivery (COD)*\n\nPlease confirm my order. Thank you!`;
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }
 

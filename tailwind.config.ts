@@ -35,7 +35,7 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['var(--font-outfit)', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', '-apple-system', 'sans-serif'], arabic: ['Amiri', '"Noto Naskh Arabic"', 'serif'],
       },
       boxShadow: {
         soft: '0 2px 12px -2px rgba(44, 42, 41, 0.06), 0 1px 4px -1px rgba(44, 42, 41, 0.04)',

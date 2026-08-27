@@ -10,7 +10,7 @@ import SearchModal from './SearchModal';
 import { useCart } from '@/context/CartContext';
 
 const NAV_LINKS = [
-  { name: 'All Products', href: '/products', badge: '🔥' },
+  { name: 'All Products', href: '/products',  },
   { name: 'Starter Sets', href: '/category/newborn-starter-sets' },
   { name: 'Rompers', href: '/category/bodysuits-rompers' },
   { name: 'Dresses', href: '/category/baby-dresses-frocks' },
@@ -26,6 +26,12 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-charcoal-border/70 shadow-xs">
+      {/* Top Bismillah Calligraphy Bar */}
+      <div className="bg-cream-100 text-charcoal border-b border-charcoal-border/40 py-1.5 px-4 text-center">
+        <span className="font-arabic text-sm sm:text-base font-bold tracking-wider select-none text-charcoal/90">
+          بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+        </span>
+      </div>
       <AnnouncementBar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -48,9 +54,9 @@ export default function Header() {
                 <Image src="/logo.png" alt="Tiny Kids Pakistan Logo" fill className="object-cover" priority />
               </div>
               <div className="flex flex-col">
-                <span className="font-black text-lg sm:text-2xl text-charcoal tracking-tight leading-none group-hover:text-brand transition-colors">
-                  Tiny Kids<span className="text-coral">™</span>
-                </span>
+                <span className="font-extrabold text-xl sm:text-2xl text-charcoal tracking-tight leading-none lowercase group-hover:text-brand transition-colors">
+    tinykids<span className="text-brand">.pk</span>
+  </span>
                 <span className="text-[10px] text-charcoal-muted font-bold tracking-wider uppercase mt-0.5">
                   Baby Clothes Pakistan
                 </span>
@@ -73,7 +79,7 @@ export default function Header() {
                   }`}
                 >
                   <span className="flex items-center space-x-1">
-                    {link.badge && <span>{link.badge}</span>}
+                    
                     <span>{link.name}</span>
                   </span>
                 </Link>
@@ -138,7 +144,7 @@ export default function Header() {
                   <div className="relative w-8 h-8 rounded-xl overflow-hidden bg-white shadow-xs border border-charcoal-border/50">
                     <Image src="/logo.png" alt="Tiny Kids" fill className="object-cover" />
                   </div>
-                  <span className="font-black text-lg text-charcoal">Tiny Kids™</span>
+                  <span className="font-extrabold text-lg text-charcoal lowercase">tinykids.pk</span>
                 </div>
                 <button
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -158,7 +164,7 @@ export default function Header() {
                     className="flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-bold text-charcoal hover:bg-cream-100 transition-colors"
                   >
                     <span className="flex items-center space-x-2">
-                      {link.badge && <span>{link.badge}</span>}
+                      
                       <span>{link.name}</span>
                     </span>
                   </Link>

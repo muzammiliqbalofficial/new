@@ -20,7 +20,7 @@ export default function ReturnsPage() {
             Returns & Exchange Policy
           </h1>
           <div className="inline-block p-2 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-800">
-            📌 <em>Client Note: This is placeholder policy copy. Please review and inform us if you wish to amend return window or restocking conditions.</em>
+             <em>Client Note: This is placeholder policy copy. Please review and inform us if you wish to amend return window or restocking conditions.</em>
           </div>
         </div>
 
