@@ -1,24 +1,19 @@
-const SUPABASE_URL = 'https://qdouuizitxiiumgkgnyt.supabase.co';
-const SERVICE_KEY = 'sb_secret_d5OHSu1-JX2kUnq7HZIp3g_rEsECr0Y';
+import { supabase, supabaseAdmin } from './supabase';
+import { Product, Category } from './types';
 
-const getHeaders = () => ({
-  'apikey': SERVICE_KEY,
-  'Authorization': 'Bearer ' + SERVICE_KEY,
-  'Content-Type': 'application/json',
-});
-
-// 1. Fetch Orders
+// 1. Fetch Orders (uses admin client)
 export async function getAdminOrders() {
   try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/orders?select=*,order_items(*)&order=created_at.desc&_t=${Date.now()}`,
-      { headers: getHeaders() }
-    );
-    if (!res.ok) {
-      console.error('Failed to fetch orders:', res.status);
+    const { data, error } = await supabaseAdmin
+      .from('orders')
+      .select('*, order_items(*)')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching admin orders:', error);
       return [];
     }
-    return await res.json();
+    return data || [];
   } catch (err) {
     console.error('getAdminOrders exception:', err);
     return [];
@@ -28,30 +23,57 @@ export async function getAdminOrders() {
 // 2. Update Order Status
 export async function setOrderStatus(orderId: string, status: string) {
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/orders?id=eq.${orderId}`, {
-      method: 'PATCH',
-      headers: { ...getHeaders(), 'Prefer': 'return=representation' },
-      body: JSON.stringify({ status, updated_at: new Date().toISOString() }),
-    });
-    return res.ok;
+    const { error } = await supabaseAdmin
+      .from('orders')
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq('id', orderId);
+
+    return !error;
   } catch (err) {
-    console.error('setOrderStatus error:', err);
+    console.error('setOrderStatus exception:', err);
     return false;
   }
 }
 
-// 3. Fetch Products
-export async function getAdminProducts() {
+// 3. Fetch Products (fetches all products including unpublished for admin)
+export async function getAdminProducts(): Promise<Product[]> {
   try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/products?select=id,slug,name,price,sale_price,stock,is_published,category_id,categories(id,name,slug),product_images(id,r2_key,is_primary,is_white_background,is_description_image)&order=created_at.desc&_t=${Date.now()}`,
-      { headers: getHeaders() }
-    );
-    if (!res.ok) {
-      console.error('Failed to fetch products:', res.status);
+    const { data, error } = await supabaseAdmin
+      .from('products')
+      .select(
+        `
+        id,
+        slug,
+        name,
+        brand,
+        attributes,
+        price,
+        sale_price,
+        stock,
+        is_published,
+        category_id,
+        categories (
+          id,
+          name,
+          slug
+        ),
+        product_images (
+          id,
+          r2_key,
+          sort_order,
+          is_primary,
+          is_white_background,
+          is_description_image
+        )
+      `
+      )
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching admin products:', error);
       return [];
     }
-    return await res.json();
+    return (data || []) as unknown as Product[];
   } catch (err) {
     console.error('getAdminProducts exception:', err);
     return [];
@@ -59,14 +81,18 @@ export async function getAdminProducts() {
 }
 
 // 4. Fetch Categories
-export async function getAdminCategories() {
+export async function getAdminCategories(): Promise<Category[]> {
   try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/categories?select=*&order=sort_order.asc&_t=${Date.now()}`,
-      { headers: getHeaders() }
-    );
-    if (!res.ok) return [];
-    return await res.json();
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .order('sort_order', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching categories:', error);
+      return [];
+    }
+    return (data || []) as unknown as Category[];
   } catch (err) {
     console.error('getAdminCategories exception:', err);
     return [];
@@ -76,12 +102,12 @@ export async function getAdminCategories() {
 // 5. Update Product
 export async function updateAdminProduct(productId: string, payload: any) {
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${productId}`, {
-      method: 'PATCH',
-      headers: { ...getHeaders(), 'Prefer': 'return=representation' },
-      body: JSON.stringify(payload),
-    });
-    return res.ok;
+    const { error } = await supabaseAdmin
+      .from('products')
+      .update({ ...payload, updated_at: new Date().toISOString() })
+      .eq('id', productId);
+
+    return !error;
   } catch (err) {
     console.error('updateAdminProduct exception:', err);
     return false;
@@ -91,11 +117,12 @@ export async function updateAdminProduct(productId: string, payload: any) {
 // 6. Delete Product
 export async function deleteAdminProduct(productId: string) {
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${productId}`, {
-      method: 'DELETE',
-      headers: getHeaders(),
-    });
-    return res.ok;
+    const { error } = await supabaseAdmin
+      .from('products')
+      .delete()
+      .eq('id', productId);
+
+    return !error;
   } catch (err) {
     console.error('deleteAdminProduct exception:', err);
     return false;
@@ -105,13 +132,15 @@ export async function deleteAdminProduct(productId: string) {
 // 7. Create Product
 export async function createAdminProduct(payload: any) {
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/products`, {
-      method: 'POST',
-      headers: { ...getHeaders(), 'Prefer': 'return=representation' },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
+    const { data, error } = await supabaseAdmin
+      .from('products')
+      .insert([payload])
+      .select();
+
+    if (error) {
+      console.error('Error creating product:', error);
+      return null;
+    }
     return data?.[0] || null;
   } catch (err) {
     console.error('createAdminProduct exception:', err);
