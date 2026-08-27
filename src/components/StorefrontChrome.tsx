@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { usePathname } from 'next/navigation';
 import Header from '@/components/Header';
@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import CartDrawer from '@/components/CartDrawer';
 import FloatingWhatsApp from '@/components/FloatingWhatsApp';
 import BismillahIntro from '@/components/BismillahIntro';
+import MobileBottomNav from '@/components/MobileBottomNav';
 import { CartProvider } from '@/context/CartContext';
 
 export default function StorefrontChrome({ children }: { children: React.ReactNode }) {
@@ -20,10 +21,11 @@ export default function StorefrontChrome({ children }: { children: React.ReactNo
     <CartProvider>
       <BismillahIntro />
       <Header />
-      <div className="flex-1">{children}</div>
+      <div className="flex-1 pb-16 md:pb-0">{children}</div>
       <Footer />
       <CartDrawer />
       <FloatingWhatsApp />
+      <MobileBottomNav />
     </CartProvider>
   );
 }

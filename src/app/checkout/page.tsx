@@ -29,7 +29,7 @@ const POPULAR_CITIES = [
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart: items, subtotal, clearCart } = useCart();
-  const shippingFee = subtotal >= 2999 ? 0 : 199;
+  const shippingFee = subtotal >= 2500 ? 0 : 199;
   const total = subtotal + shippingFee;
 
   React.useEffect(() => {
@@ -431,7 +431,17 @@ export default function CheckoutPage() {
             </div>
           </div>
         </div>
-      </form>
+        <div className="pt-2 border-t border-charcoal-border/40">
+                <a
+                  href={"https://wa.me/923366895035?text=" + encodeURIComponent("Assalam o Alaikum tinykids.pk! I want to place this order on WhatsApp:\n\n" + items.map(i => "• " + i.name + " (Qty: " + i.quantity + ") - Rs. " + (i.price * i.quantity)).join("\n") + "\n\nSubtotal: Rs. " + subtotal + "\nShipping: Rs. " + shippingFee + "\nTotal: Rs. " + total + "\n\nName: " + (formData.customer_name || "Parent") + "\nPhone: " + (formData.customer_phone || "") + "\nAddress: " + (formData.address || "") + ", " + (formData.city === "Other City" ? formData.custom_city : formData.city))}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3.5 bg-[#25D366] hover:bg-[#20bd5a] text-white font-extrabold text-xs sm:text-sm rounded-2xl shadow-xs transition-colors flex items-center justify-center space-x-2"
+                >
+                  <span>Or Order Directly via WhatsApp</span>
+                </a>
+              </div>
+            </form>
     </div>
   );
 }

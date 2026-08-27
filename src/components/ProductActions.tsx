@@ -1,8 +1,8 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShoppingBag, MessageCircle, Plus, Minus, Check, Truck, ShieldCheck, RotateCcw, Ruler, Phone, Zap } from 'lucide-react';
+import { ShoppingBag, MessageCircle, Plus, Minus, Check, Truck, ShieldCheck, RotateCcw, Ruler, Phone, Zap, Edit3 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/formatters';
 import SizeChartModal from './SizeChartModal';
@@ -15,21 +15,24 @@ interface Props {
 }
 
 const DEFAULT_SIZES = ['0-3 Months', '3-6 Months', '6-12 Months'];
-const DEFAULT_COLORS = ['Pure White', 'Sky Blue', 'Baby Pink', 'Soft Mint'];
 
 export default function ProductActions({ product, imageStem, whatsappNumber = '923366895035' }: Props) {
   const router = useRouter();
-  const { addToCart, openDrawer } = useCart();
+  const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('0-3 Months');
-  const [selectedColor, setSelectedColor] = useState('Pure White');
+  const [babyName, setBabyName] = useState('');
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
   const [added, setAdded] = useState(false);
 
   const isPriced = product.price !== null && product.price !== undefined && product.price > 0;
   const cleanPhone = whatsappNumber.replace(/[^0-9]/g, '');
 
-  const whatsappMsg = `Assalam o Alaikum tinykids.pk! I want to order this item on Cash on Delivery:\n\n*Product:* ${product.name}\n*Price:* ${formatPrice(product.price)}\n*Size:* ${selectedSize}\n*Quantity:* ${quantity}\n\nPlease confirm availability and delivery to my address.`;
+  const itemNameWithCustomization = babyName.trim()
+    ? `${product.name} (${selectedSize}) [Baby Name: ${babyName.trim()}]`
+    : `${product.name} (${selectedSize})`;
+
+  const whatsappMsg = `Assalam o Alaikum tinykids.pk! I want to order this item on Cash on Delivery:\n\n*Product:* ${product.name}\n*Price:* ${formatPrice(product.price)}\n*Size:* ${selectedSize}${babyName.trim() ? `\n*Baby Name:* ${babyName.trim()}` : ''}\n*Quantity:* ${quantity}\n\nPlease confirm availability and delivery to my address.`;
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMsg)}`;
 
   const handleAddToCart = () => {
@@ -38,7 +41,7 @@ export default function ProductActions({ product, imageStem, whatsappNumber = '9
       {
         id: product.id,
         slug: product.slug,
-        name: `${product.name} (${selectedSize})`,
+        name: itemNameWithCustomization,
         price: product.price,
         originalPrice: product.sale_price,
         imageStem,
@@ -55,7 +58,7 @@ export default function ProductActions({ product, imageStem, whatsappNumber = '9
       {
         id: product.id,
         slug: product.slug,
-        name: `${product.name} (${selectedSize})`,
+        name: itemNameWithCustomization,
         price: product.price,
         originalPrice: product.sale_price,
         imageStem,
@@ -128,6 +131,22 @@ export default function ProductActions({ product, imageStem, whatsappNumber = '9
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Baby Name Customization Field (Optional) */}
+      <div className="p-3.5 rounded-2xl bg-cream-50/70 border border-charcoal-border/70 space-y-1.5">
+        <label className="text-xs font-extrabold text-charcoal flex items-center space-x-1.5">
+          <Edit3 className="w-3.5 h-3.5 text-brand" />
+          <span>Enter Baby Name (Optional — for gift tag / custom print):</span>
+        </label>
+        <input
+          type="text"
+          maxLength={20}
+          value={babyName}
+          onChange={(e) => setBabyName(e.target.value)}
+          placeholder="e.g. Zayd / Anaya (Max 20 letters)"
+          className="w-full px-3 py-2 bg-white rounded-xl border border-charcoal-border/80 text-xs font-medium text-charcoal focus:outline-none focus:ring-2 focus:ring-brand/30"
+        />
       </div>
 
       {/* Quantity & Action Buttons */}
@@ -210,9 +229,9 @@ export default function ProductActions({ product, imageStem, whatsappNumber = '9
         <div className="flex items-start space-x-2.5">
           <Truck className="w-4 h-4 text-brand mt-0.5 flex-shrink-0" />
           <div>
-            <span className="font-extrabold text-charcoal block">Fast Delivery Across Pakistan</span>
+            <span className="font-extrabold text-charcoal block">Free Delivery over PKR 2,500</span>
             <span className="text-[11px] text-charcoal-muted leading-relaxed block">
-              2-3 Days in Karachi, Lahore, Islamabad • 3-4 Days other cities. Free shipping above Rs. 2,999 (Flat Rs. 199).
+              2-3 Days in Karachi, Lahore, Islamabad • 3-4 Days other cities. Flat Rs. 199 on smaller orders.
             </span>
           </div>
         </div>
