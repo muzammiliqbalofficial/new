@@ -93,7 +93,7 @@ export function buildWhatsAppOrderConfirmationLink(
 ): string {
   const phone = (whatsappNumber || '923366895035').replace(/[^0-9]/g, '');
   const itemsText = items.map((i) => `• ${i.name} (x${i.quantity})`).join('\n');
-  const message = `️ *NEW ORDER CONFIRMATION — TINY KIDS*\n\nOrder Reference: *${orderNumber}*\nCustomer Name: *${customerName}*\n\nItems:\n${itemsText}\n\nTotal Amount: *${formatPrice(total)}*\nPayment: *Cash on Delivery (COD)*\n\nPlease confirm my order. Thank you!`;
+  const message = `️ *NEW ORDER CONFIRMATION — tinykids.pk*\n\nOrder Reference: *${orderNumber}*\nCustomer Name: *${customerName}*\n\nItems:\n${itemsText}\n\nTotal Amount: *${formatPrice(total)}*\nPayment: *Cash on Delivery (COD)*\n\nPlease confirm my order. Thank you!`;
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }
 

@@ -78,17 +78,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { category, products } = await getCategoryData(resolvedParams.slug);
 
   if (!category) {
-    return { title: 'Category Not Found | Tiny Kids' };
+    return { title: 'Category Not Found | tinykids.pk' };
   }
 
   return {
-    title: `${category.name} — Newborn Baby Clothes Online in Pakistan | Tiny Kids™`,
-    description: `Shop ${category.name} in Pakistan at Tiny Kids. Explore ${products.length}+ soft 100% pure cotton baby designs with nationwide Cash on Delivery.`,
+    title: `${category.name} — Newborn Baby Clothes Online in Pakistan | tinykids.pk`,
+    description: `Shop ${category.name} in Pakistan at tinykids.pk. Explore ${products.length}+ soft 100% pure cotton baby designs with nationwide Cash on Delivery.`,
     alternates: {
       canonical: `https://tinykids.pk/category/${category.slug}/`,
     },
     openGraph: {
-      title: `${category.name} | Tiny Kids Pakistan`,
+      title: `${category.name} | tinykids.pk`,
       description: `Shop ${category.name} with Cash on Delivery across Pakistan.`,
       url: `https://tinykids.pk/category/${category.slug}/`,
     },
@@ -108,7 +108,7 @@ export default async function CategoryPage({ params }: Props) {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     name: `${category.name} - Baby Clothes Pakistan`,
-    description: `Shop ${category.name} online at Tiny Kids Pakistan with Cash on Delivery.`,
+    description: `Shop ${category.name} online at tinykids.pk with Cash on Delivery.`,
     url: `https://tinykids.pk/category/${category.slug}/`,
     mainEntity: {
       '@type': 'ItemList',

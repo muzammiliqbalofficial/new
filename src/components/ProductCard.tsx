@@ -51,7 +51,7 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
         <div className="relative w-full h-full flex items-center justify-center">
           <Image
             src={imageStem}
-            alt={`${product.name} — Newborn Baby Clothes Pakistan | Tiny Kids`}
+            alt={`${product.name} — Newborn Baby Clothes Pakistan | tinykids.pk`}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             priority={priority}

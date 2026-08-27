@@ -112,20 +112,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { product } = await getProduct(resolvedParams.slug);
 
   if (!product) {
-    return { title: 'Product Not Found | Tiny Kids' };
+    return { title: 'Product Not Found | tinykids.pk' };
   }
 
   const mainImg = resolveMainImage(product, '1400w');
   const priceText = product.price ? ` — ${formatPrice(product.price)}` : '';
 
   return {
-    title: `${product.name}${priceText} | Tiny Kids Pakistan`,
+    title: `${product.name}${priceText} | tinykids.pk`,
     description: `Buy ${product.name} online in Pakistan. 100% pure cotton babywear, Cash on Delivery nationwide, 7-day easy exchange guarantee.`,
     alternates: {
       canonical: `https://tinykids.pk/product/${product.slug}/`,
     },
     openGraph: {
-      title: `${product.name} | Tiny Kids Pakistan`,
+      title: `${product.name} | tinykids.pk`,
       description: `Buy ${product.name} with Cash on Delivery across Pakistan.`,
       images: [{ url: mainImg, width: 800, height: 800, alt: product.name }],
     },
@@ -157,7 +157,7 @@ export default async function ProductPage({ params }: Props) {
     sku: product.slug,
     brand: {
       '@type': 'Brand',
-      name: 'Tiny Kids',
+      name: 'tinykids.pk',
     },
     offers: {
       '@type': 'Offer',
@@ -169,7 +169,7 @@ export default async function ProductPage({ params }: Props) {
       availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
       seller: {
         '@type': 'Organization',
-        name: 'Tiny Kids',
+        name: 'tinykids.pk',
       },
     },
   };

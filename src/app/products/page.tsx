@@ -8,7 +8,7 @@ import AllProductsView from '@/components/AllProductsView';
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: 'All Baby Clothes & Newborn Outfits Online in Pakistan | Tiny Kids™',
+  title: 'All Baby Clothes & Newborn Outfits Online in Pakistan | tinykids.pk',
   description:
     'Browse our complete collection of newborn starter sets, infant rompers, baby frocks, sweaters, and accessories. Pure combed cotton, nationwide Cash on Delivery across Pakistan.',
   alternates: {
