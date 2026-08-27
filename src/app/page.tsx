@@ -7,6 +7,7 @@ import CategoryBubbles from '@/components/CategoryBubbles';
 import TrustBadges from '@/components/TrustBadges';
 import FaqSection from '@/components/FaqSection';
 import HeroSlider from '@/components/HeroSlider';
+import MarqueeTicker from '@/components/MarqueeTicker';
 import { Product } from '@/lib/types';
 
 export const revalidate = 3600;
@@ -70,10 +71,13 @@ export default async function HomePage() {
       {/* 1. Interactive E-Commerce Hero Slider */}
       <HeroSlider />
 
-      {/* 2. Visual Category Explorer */}
+      {/* 2. Infinite Continuous Auto-Scrolling Ticker (Cash on Delivery All Over Pakistan) */}
+      <MarqueeTicker />
+
+      {/* 3. Visual Category Explorer */}
       <CategoryBubbles />
 
-      {/* 3. Newborn Starter Sets & Packs Grid */}
+      {/* 4. Newborn Starter Sets & Packs Grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-charcoal-border/50 pb-4">
           <div>
@@ -100,10 +104,10 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 4. Trust Badges */}
+      {/* 5. Trust Badges */}
       <TrustBadges />
 
-      {/* 5. Rompers & Bodysuits Grid */}
+      {/* 6. Rompers & Bodysuits Grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-charcoal-border/50 pb-4">
           <div>
@@ -130,7 +134,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 6. SEO Keywords Rich Content Block */}
+      {/* 7. SEO Keywords Rich Content Block */}
       <section className="bg-cream-100/60 py-10 border-y border-charcoal-border/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
           <h2 className="text-lg sm:text-xl font-extrabold text-charcoal tracking-tight">
@@ -152,7 +156,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 7. FAQs */}
+      {/* 8. FAQs */}
       <FaqSection />
     </div>
   );

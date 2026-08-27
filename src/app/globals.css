@@ -10,7 +10,7 @@
 
   body {
     background-color: #FAF7F2;
-    color: #2C2A29;
+    color: #282524;
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
   }
@@ -25,7 +25,27 @@
   scrollbar-width: none;
 }
 
+/* Infinite Marquee Ticker */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 28s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
 /* Smooth transitions */
 * {
-  border-color: rgba(44, 42, 41, 0.12);
+  border-color: rgba(40, 37, 36, 0.12);
 }
