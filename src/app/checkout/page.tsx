@@ -9,6 +9,7 @@ import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/formatters';
 import { sendOrderEmailNotification } from '@/lib/order-notifier';
 import { supabase } from '@/lib/supabase';
+import { trackInitiateCheckout } from '@/lib/tracking';
 
 const POPULAR_CITIES = [
   'Karachi',
@@ -28,8 +29,14 @@ const POPULAR_CITIES = [
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart: items, subtotal, clearCart } = useCart();
-  const shippingFee = subtotal >= 3000 ? 0 : 250;
+  const shippingFee = subtotal >= 2999 ? 0 : 199;
   const total = subtotal + shippingFee;
+
+  React.useEffect(() => {
+    if (items.length > 0) {
+      trackInitiateCheckout(items.map(i => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity })), total);
+    }
+  }, [items, total]);
 
   const [formData, setFormData] = useState({
     customer_name: '',

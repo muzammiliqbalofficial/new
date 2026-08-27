@@ -1,9 +1,10 @@
-﻿import type { Metadata, Viewport } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import StorefrontChrome from '@/components/StorefrontChrome';
+import Analytics from '@/components/Analytics';
 
 export const viewport: Viewport = {
-  themeColor: '#3D6A52',
+  themeColor: '#9C5B42',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
@@ -12,11 +13,11 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL('https://tinykids.pk'),
   title: {
-    default: 'tinykids.pk — Newborn Baby Clothes & Rompers Online in Pakistan',
+    default: 'tinykids.pk — Premium Newborn Baby Clothes Online in Pakistan',
     template: '%s | tinykids.pk',
   },
   description:
-    'Shop premium newborn baby clothes, rompers, baby gift starter sets, and infant dresses online in Pakistan. 100% pure cotton, fast Cash on Delivery across Karachi, Lahore, Islamabad & nationwide.',
+    'Shop 100% pure cotton newborn baby clothes, hospital starter sets, baby rompers, and infant dresses online in Pakistan. Fast Cash on Delivery across Karachi, Lahore, Islamabad & 200+ cities.',
   keywords: [
     'Newborn baby clothes Pakistan',
     'Baby clothes online Pakistan',
@@ -28,8 +29,10 @@ export const metadata: Metadata = {
     'Baby gift packs Pakistan',
     'Cash on delivery baby shop Pakistan',
     'tinykids.pk',
-    'Branny baby clothes alternative',
   ],
+  verification: {
+    google: 'google-site-verification-tinykids',
+  },
   authors: [{ name: 'tinykids.pk', url: 'https://tinykids.pk' }],
   creator: 'tinykids.pk',
   publisher: 'tinykids.pk',
@@ -46,9 +49,9 @@ export const metadata: Metadata = {
     locale: 'en_PK',
     url: 'https://tinykids.pk',
     siteName: 'tinykids.pk',
-    title: 'tinykids.pk — Newborn Baby Clothes & Rompers Online in Pakistan',
+    title: 'tinykids.pk — Premium Newborn Baby Clothes Online in Pakistan',
     description:
-      'Explore soft, pure cotton newborn starter sets, baby rompers, and dresses. Cash on Delivery across Pakistan.',
+      'Explore soft, pure cotton newborn starter sets, baby rompers, and dresses with Cash on Delivery across Pakistan.',
     images: [
       {
         url: 'https://tinykids.pk/logo.png',
@@ -60,7 +63,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'tinykids.pk — Newborn Baby Clothes in Pakistan',
+    title: 'tinykids.pk — Premium Newborn Baby Clothes in Pakistan',
     description:
       'Pure cotton newborn starter packs, rompers, and infant outfits with Cash on Delivery in Pakistan.',
     images: ['https://tinykids.pk/logo.png'],
@@ -142,6 +145,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased text-charcoal bg-white flex flex-col min-h-screen selection:bg-brand-soft selection:text-brand">
+        <Analytics />
         <StorefrontChrome>{children}</StorefrontChrome>
       </body>
     </html>

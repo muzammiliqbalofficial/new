@@ -129,6 +129,11 @@ export default function Footer() {
                   Privacy Policy
                 </Link>
               </li>
+              <li>
+                <Link href="/terms" className="hover:text-white transition-colors">
+                  Terms & Conditions
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -153,7 +158,14 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-charcoal-muted gap-4">
-          <p>© {new Date().getFullYear()} tinykids.pk. All rights reserved.</p>
+          <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4">
+            <p>© {new Date().getFullYear()} tinykids.pk. All rights reserved.</p>
+            <div className="flex items-center space-x-3 text-brand-light">
+              <a href="https://facebook.com/tinykids.pk" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors text-[11px] font-bold">Facebook</a>
+              <span>•</span>
+              <a href="https://instagram.com/tinykids.pk" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors text-[11px] font-bold">Instagram</a>
+            </div>
+          </div>
           <div className="flex items-center space-x-4">
             <span className="flex items-center space-x-1">
               <ShieldCheck className="w-3.5 h-3.5 text-brand-light" />

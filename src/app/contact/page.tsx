@@ -1,86 +1,194 @@
-﻿import React from 'react';
-import type { Metadata } from 'next';
-import Breadcrumbs from '@/components/Breadcrumbs';
-import { Phone, Mail, MapPin, MessageCircle, Clock } from 'lucide-react';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Contact Us',
-  description: 'Get in touch with tinykids.pk customer support via WhatsApp, phone, or email.',
-};
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { Phone, Mail, MapPin, MessageCircle, Clock, ChevronRight, CheckCircle2, Send } from 'lucide-react';
 
 export default function ContactPage() {
-  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '923000000000';
-  const cleanPhone = whatsappNumber.replace(/[^0-9]/g, '');
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [message, setMessage] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !phone || !message) return;
+
+    // Send to WhatsApp / Notify
+    const text = `Assalam o Alaikum tinykids.pk!\n\n*Name:* ${name}\n*Phone:* ${phone}\n*Message:* ${message}`;
+    const waUrl = `https://wa.me/923366895035?text=${encodeURIComponent(text)}`;
+    window.open(waUrl, '_blank');
+    setSubmitted(true);
+  };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
-      <Breadcrumbs items={[{ label: 'Contact Us' }]} />
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 space-y-10">
+      {/* Breadcrumb */}
+      <nav className="flex items-center space-x-2 text-xs text-charcoal-muted font-medium">
+        <Link href="/" className="hover:text-brand transition-colors">
+          Home
+        </Link>
+        <ChevronRight className="w-3.5 h-3.5" />
+        <span className="text-charcoal font-bold">Contact Us</span>
+      </nav>
 
-      <div className="bg-white rounded-3xl p-6 sm:p-12 border border-charcoal-border/70 shadow-soft space-y-8">
-        <div className="space-y-2">
-          <span className="text-xs font-bold text-brand uppercase tracking-wider">Customer Support</span>
-          <h1 className="text-2xl sm:text-3xl font-black text-charcoal tracking-tight">We’re Here to Help!</h1>
-          <p className="text-xs sm:text-sm text-charcoal-muted">
-            Have questions about product sizes, your delivery, or custom orders? Reach out anytime.
-          </p>
+      {/* Header */}
+      <div className="border-b border-charcoal-border/60 pb-6 space-y-2">
+        <span className="text-[11px] font-extrabold uppercase tracking-wider text-brand block">
+          Customer Support Helpline
+        </span>
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-charcoal tracking-tight">
+          Get in Touch with tinykids.pk
+        </h1>
+        <p className="text-xs sm:text-sm text-charcoal-muted max-w-2xl leading-relaxed">
+          Have a question about sizes, delivery tracking, or order placement? Our customer care team is here to assist you 7 days a week.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+        {/* Contact Details Column */}
+        <div className="space-y-4">
+          <div className="p-5 rounded-3xl bg-cream-50/80 border border-charcoal-border/70 space-y-3">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-2xl bg-[#25D366]/10 text-[#25D366] flex items-center justify-center flex-shrink-0">
+                <MessageCircle className="w-5 h-5 fill-current" />
+              </div>
+              <div>
+                <span className="text-[11px] font-bold text-charcoal-muted uppercase block">Official WhatsApp</span>
+                <a
+                  href="https://wa.me/923366895035"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-extrabold text-sm text-charcoal hover:text-brand transition-colors"
+                >
+                  +92 336 6895035
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-5 rounded-3xl bg-cream-50/80 border border-charcoal-border/70 space-y-3">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-2xl bg-brand-soft text-brand flex items-center justify-center flex-shrink-0">
+                <Phone className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[11px] font-bold text-charcoal-muted uppercase block">Helpline Call</span>
+                <a
+                  href="tel:+923366895035"
+                  className="font-extrabold text-sm text-charcoal hover:text-brand transition-colors"
+                >
+                  0336-6895035
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-5 rounded-3xl bg-cream-50/80 border border-charcoal-border/70 space-y-3">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-2xl bg-brand-soft text-brand flex items-center justify-center flex-shrink-0">
+                <Mail className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[11px] font-bold text-charcoal-muted uppercase block">Email Inquiries</span>
+                <a
+                  href="mailto:info@tinykids.pk"
+                  className="font-extrabold text-sm text-charcoal hover:text-brand transition-colors"
+                >
+                  info@tinykids.pk
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-5 rounded-3xl bg-cream-50/80 border border-charcoal-border/70 space-y-3">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-2xl bg-brand-soft text-brand flex items-center justify-center flex-shrink-0">
+                <Clock className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[11px] font-bold text-charcoal-muted uppercase block">Working Hours</span>
+                <span className="font-extrabold text-sm text-charcoal">
+                  Monday – Sunday: 9:00 AM – 10:00 PM
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-5 rounded-3xl bg-cream-50/80 border border-charcoal-border/70 space-y-3">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-2xl bg-brand-soft text-brand flex items-center justify-center flex-shrink-0">
+                <MapPin className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[11px] font-bold text-charcoal-muted uppercase block">Dispatch Hub</span>
+                <span className="font-extrabold text-sm text-charcoal">
+                  Karachi, Pakistan — Delivering Nationwide
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-          {/* WhatsApp Card */}
-          <div className="p-6 rounded-2xl bg-cream-50 border border-charcoal-border/60 space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-[#25D366]/20 text-[#25D366] flex items-center justify-center">
-              <MessageCircle className="w-6 h-6" />
-            </div>
-            <h3 className="text-sm font-bold text-charcoal">WhatsApp Direct Helpline</h3>
-            <p className="text-xs text-charcoal-muted">
-              Get instant responses for order tracking, size suggestions, and photos.
-            </p>
-            <a
-              href={`https://wa.me/${cleanPhone}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center space-x-2 text-xs font-bold text-[#128C7E] hover:underline"
-            >
-              <span>Chat with us on WhatsApp →</span>
-            </a>
-          </div>
+        {/* Contact Form Column */}
+        <div className="p-6 sm:p-8 bg-white rounded-3xl border border-charcoal-border/70 shadow-soft space-y-4">
+          <h2 className="font-extrabold text-lg text-charcoal tracking-tight">Send Us a Direct Message</h2>
+          <p className="text-xs text-charcoal-muted font-medium">
+            Fill out the quick form below and our team will get back to you immediately on WhatsApp.
+          </p>
 
-          {/* Email Card */}
-          <div className="p-6 rounded-2xl bg-cream-50 border border-charcoal-border/60 space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-brand/10 text-brand flex items-center justify-center">
-              <Mail className="w-6 h-6" />
+          {submitted ? (
+            <div className="p-4 bg-emerald-50 text-emerald-800 rounded-2xl flex items-center space-x-2 font-bold text-xs">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+              <span>Thank you! Your message has been forwarded to our WhatsApp team.</span>
             </div>
-            <h3 className="text-sm font-bold text-charcoal">Email Support</h3>
-            <p className="text-xs text-charcoal-muted">
-              For corporate inquiries, feedback, or formal order queries.
-            </p>
-            <span className="text-xs font-semibold text-charcoal block">
-              {process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'info@tinykids.pk'}
-            </span>
-          </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+              <div className="space-y-1">
+                <label className="font-bold text-charcoal block">Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Fatima Ali"
+                  className="w-full px-4 py-2.5 bg-cream-50 rounded-xl border border-charcoal-border/80 focus:outline-none focus:ring-2 focus:ring-brand/30"
+                />
+              </div>
 
-          {/* Hours Card */}
-          <div className="p-6 rounded-2xl bg-cream-50 border border-charcoal-border/60 space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-brand/10 text-brand flex items-center justify-center">
-              <Clock className="w-6 h-6" />
-            </div>
-            <h3 className="text-sm font-bold text-charcoal">Operating Hours</h3>
-            <p className="text-xs text-charcoal-muted">
-              Monday to Saturday: 10:00 AM – 8:00 PM (PKT)<br />
-              Sunday: WhatsApp inquiries answered periodically
-            </p>
-          </div>
+              <div className="space-y-1">
+                <label className="font-bold text-charcoal block">Phone / WhatsApp Number *</label>
+                <input
+                  type="tel"
+                  required
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="e.g. 0333 1234567"
+                  className="w-full px-4 py-2.5 bg-cream-50 rounded-xl border border-charcoal-border/80 focus:outline-none focus:ring-2 focus:ring-brand/30"
+                />
+              </div>
 
-          {/* Delivery Card */}
-          <div className="p-6 rounded-2xl bg-cream-50 border border-charcoal-border/60 space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-brand/10 text-brand flex items-center justify-center">
-              <MapPin className="w-6 h-6" />
-            </div>
-            <h3 className="text-sm font-bold text-charcoal">Nationwide Delivery</h3>
-            <p className="text-xs text-charcoal-muted">
-              Orders dispatched daily from Lahore/Karachi hub via premium courier partners.
-            </p>
-          </div>
+              <div className="space-y-1">
+                <label className="font-bold text-charcoal block">How can we help? *</label>
+                <textarea
+                  rows={4}
+                  required
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Inquire about a baby product, size availability, or delivery tracking..."
+                  className="w-full px-4 py-2.5 bg-cream-50 rounded-xl border border-charcoal-border/80 focus:outline-none focus:ring-2 focus:ring-brand/30"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3.5 bg-brand hover:bg-brand-dark text-white font-extrabold text-xs rounded-2xl shadow-card hover:shadow-hover transition-all flex items-center justify-center space-x-2"
+              >
+                <Send className="w-4 h-4" />
+                <span>Send Message via WhatsApp</span>
+              </button>
+            </form>
+          )}
         </div>
       </div>
     </div>

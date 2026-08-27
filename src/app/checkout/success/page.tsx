@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle2, Truck, Package, ArrowRight, Phone, ShieldCheck, ShoppingBag } from 'lucide-react';
 import { formatPrice } from '@/lib/formatters';
+import { trackPurchase } from '@/lib/tracking';
 
 function SuccessContent() {
   const searchParams = useSearchParams();
@@ -22,6 +23,7 @@ function SuccessContent() {
         try {
           const parsed = JSON.parse(stored);
           setOrderData(parsed);
+          trackPurchase({ orderNumber: parsed.orderNumber || queryOrderNum, total: parsed.total || queryTotal, items: (parsed.items || []).map((i: any) => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity })) });
         } catch (e) {}
       }
     }

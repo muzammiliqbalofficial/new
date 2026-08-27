@@ -73,6 +73,38 @@ export default async function HomePage() {
       {/* 2. Visual Category Explorer */}
       <CategoryBubbles />
 
+      
+      {/* 2b. Shop By Age Hub */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="p-6 rounded-3xl bg-cream-50/90 border border-charcoal-border/70 shadow-soft space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-brand block">Quick Sizing Filter</span>
+              <h3 className="text-lg sm:text-xl font-extrabold text-charcoal tracking-tight">Shop Baby Outfits by Age</h3>
+            </div>
+            <Link href="/products" className="text-xs font-bold text-brand hover:underline">View All Sizes &rarr;</Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <Link href="/products" className="p-4 bg-white rounded-2xl border border-charcoal-border/70 hover:border-brand hover:shadow-card transition-all text-center group">
+              <span className="text-base font-extrabold text-charcoal group-hover:text-brand block">0 - 3 Months</span>
+              <span className="text-[11px] text-charcoal-muted font-medium">Newborn & Hospital Sets</span>
+            </Link>
+            <Link href="/products" className="p-4 bg-white rounded-2xl border border-charcoal-border/70 hover:border-brand hover:shadow-card transition-all text-center group">
+              <span className="text-base font-extrabold text-charcoal group-hover:text-brand block">3 - 6 Months</span>
+              <span className="text-[11px] text-charcoal-muted font-medium">Cotton Rompers & Suits</span>
+            </Link>
+            <Link href="/products" className="p-4 bg-white rounded-2xl border border-charcoal-border/70 hover:border-brand hover:shadow-card transition-all text-center group">
+              <span className="text-base font-extrabold text-charcoal group-hover:text-brand block">6 - 12 Months</span>
+              <span className="text-[11px] text-charcoal-muted font-medium">Crawling & Playwear</span>
+            </Link>
+            <Link href="/products" className="p-4 bg-white rounded-2xl border border-charcoal-border/70 hover:border-brand hover:shadow-card transition-all text-center group">
+              <span className="text-base font-extrabold text-charcoal group-hover:text-brand block">1 - 2 Years</span>
+              <span className="text-[11px] text-charcoal-muted font-medium">Toddler Dresses & Sets</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* 3. Newborn Starter Sets & Packs Grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-charcoal-border/50 pb-4">
