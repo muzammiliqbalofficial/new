@@ -1,10 +1,6 @@
 ﻿import type { Metadata, Viewport } from 'next';
 import './globals.css';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import CartDrawer from '@/components/CartDrawer';
-import FloatingWhatsApp from '@/components/FloatingWhatsApp';
-import { CartProvider } from '@/context/CartContext';
+import StorefrontChrome from '@/components/StorefrontChrome';
 
 export const viewport: Viewport = {
   themeColor: '#7C3AED',
@@ -146,13 +142,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased text-charcoal bg-white flex flex-col min-h-screen selection:bg-brand-soft selection:text-brand">
-        <CartProvider>
-          <Header />
-          <div className="flex-1">{children}</div>
-          <Footer />
-          <CartDrawer />
-          <FloatingWhatsApp />
-        </CartProvider>
+        <StorefrontChrome>{children}</StorefrontChrome>
       </body>
     </html>
   );

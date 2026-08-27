@@ -1,0 +1,17 @@
+name = "tinykids-admin-api"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+
+[vars]
+SUPABASE_URL = "https://qdouuizitxiiumgkgnyt.supabase.co"
+SUPABASE_ANON_KEY = "sb_publishable_0ceVbgqEfGEPZYW3v5JVbw_fgqd9X1G"
+ALLOWED_ORIGINS = "https://tinykids.pk,http://localhost:3000"
+GITHUB_OWNER = "muzammiliqbalofficial"
+GITHUB_REPO = "new"
+R2_ACCOUNT_ID = "54a8e30d687f4b69b9db9c6413eaa4fc"
+R2_BUCKET_NAME = "tinykids-images"
+
+# Secrets (set via `wrangler secret put <NAME>`, never committed):
+#   GITHUB_TOKEN        — fine-grained PAT scoped to this repo, Actions: write, Contents: read
+#   R2_ACCESS_KEY_ID     — same R2 API token used by scripts/seed.ts
+#   R2_SECRET_ACCESS_KEY — same R2 API token used by scripts/seed.ts

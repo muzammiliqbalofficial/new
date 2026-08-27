@@ -9,6 +9,7 @@
     "lint": "next lint",
     "seed": "tsx scripts/seed.ts",
     "verify:anon": "tsx scripts/verify-anon.ts",
+    "create-admin": "tsx scripts/create-admin-user.ts",
     "build:worker": "opennextjs-cloudflare build",
     "preview:worker": "opennextjs-cloudflare preview",
     "deploy:worker": "opennextjs-cloudflare deploy"
