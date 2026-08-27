@@ -1,21 +1,21 @@
-﻿const SUPABASE_URL = 'https://qdouuizitxiiumgkgnyt.supabase.co';
+const SUPABASE_URL = 'https://qdouuizitxiiumgkgnyt.supabase.co';
 const SERVICE_KEY = 'sb_secret_d5OHSu1-JX2kUnq7HZIp3g_rEsECr0Y';
 
-const headers = {
+const getHeaders = () => ({
   'apikey': SERVICE_KEY,
-  'Authorization': `Bearer ${SERVICE_KEY}`,
+  'Authorization': 'Bearer ' + SERVICE_KEY,
   'Content-Type': 'application/json',
-};
+});
 
 // 1. Fetch Orders
 export async function getAdminOrders() {
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/orders?select=*,order_items(*)&order=created_at.desc`,
-      { headers, cache: 'no-store' }
+      `${SUPABASE_URL}/rest/v1/orders?select=*,order_items(*)&order=created_at.desc&_t=${Date.now()}`,
+      { headers: getHeaders() }
     );
     if (!res.ok) {
-      console.error('Failed to fetch orders:', res.status, await res.text());
+      console.error('Failed to fetch orders:', res.status);
       return [];
     }
     return await res.json();
@@ -30,7 +30,7 @@ export async function setOrderStatus(orderId: string, status: string) {
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/orders?id=eq.${orderId}`, {
       method: 'PATCH',
-      headers: { ...headers, 'Prefer': 'return=representation' },
+      headers: { ...getHeaders(), 'Prefer': 'return=representation' },
       body: JSON.stringify({ status, updated_at: new Date().toISOString() }),
     });
     return res.ok;
@@ -44,11 +44,11 @@ export async function setOrderStatus(orderId: string, status: string) {
 export async function getAdminProducts() {
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/products?select=id,slug,name,price,sale_price,stock,is_published,category_id,categories(id,name,slug),product_images(id,r2_key,is_primary,is_white_background,is_description_image)&order=created_at.desc`,
-      { headers, cache: 'no-store' }
+      `${SUPABASE_URL}/rest/v1/products?select=id,slug,name,price,sale_price,stock,is_published,category_id,categories(id,name,slug),product_images(id,r2_key,is_primary,is_white_background,is_description_image)&order=created_at.desc&_t=${Date.now()}`,
+      { headers: getHeaders() }
     );
     if (!res.ok) {
-      console.error('Failed to fetch products:', res.status, await res.text());
+      console.error('Failed to fetch products:', res.status);
       return [];
     }
     return await res.json();
@@ -62,8 +62,8 @@ export async function getAdminProducts() {
 export async function getAdminCategories() {
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/categories?select=*&order=sort_order.asc`,
-      { headers, cache: 'no-store' }
+      `${SUPABASE_URL}/rest/v1/categories?select=*&order=sort_order.asc&_t=${Date.now()}`,
+      { headers: getHeaders() }
     );
     if (!res.ok) return [];
     return await res.json();
@@ -78,7 +78,7 @@ export async function updateAdminProduct(productId: string, payload: any) {
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${productId}`, {
       method: 'PATCH',
-      headers: { ...headers, 'Prefer': 'return=representation' },
+      headers: { ...getHeaders(), 'Prefer': 'return=representation' },
       body: JSON.stringify(payload),
     });
     return res.ok;
@@ -93,7 +93,7 @@ export async function deleteAdminProduct(productId: string) {
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${productId}`, {
       method: 'DELETE',
-      headers,
+      headers: getHeaders(),
     });
     return res.ok;
   } catch (err) {
@@ -107,7 +107,7 @@ export async function createAdminProduct(payload: any) {
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/products`, {
       method: 'POST',
-      headers: { ...headers, 'Prefer': 'return=representation' },
+      headers: { ...getHeaders(), 'Prefer': 'return=representation' },
       body: JSON.stringify(payload),
     });
     if (!res.ok) return null;
