@@ -39,13 +39,6 @@ export default function Header() {
   return (
     <>
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-charcoal-border/70 shadow-xs">
-        {/* Top Bismillah Calligraphy Bar */}
-        <div className="bg-cream-100 text-charcoal border-b border-charcoal-border/40 py-1.5 px-4 text-center">
-          <span className="font-arabic text-sm sm:text-base font-bold tracking-wider select-none text-charcoal/90">
-            بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-          </span>
-        </div>
-
         <AnnouncementBar />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
