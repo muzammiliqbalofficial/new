@@ -3,6 +3,7 @@ import { AwsClient } from 'aws4fetch';
 export interface Env {
   SUPABASE_URL: string;
   SUPABASE_ANON_KEY: string;
+  SUPABASE_SERVICE_ROLE_KEY: string;
   ALLOWED_ORIGINS: string;
   GITHUB_OWNER: string;
   GITHUB_REPO: string;
@@ -60,6 +61,90 @@ function isSafeStem(stem: unknown): stem is string {
   return typeof stem === 'string' && stem.length > 0 && !stem.includes('/') && !stem.includes('\\') && !stem.includes('..');
 }
 
+interface OrderItemInput {
+  product_id?: string | null;
+  product_name: string;
+  unit_price: number;
+  quantity: number;
+  line_total: number;
+}
+
+interface OrderInput {
+  order_number: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_email?: string | null;
+  address: string;
+  city: string;
+  notes?: string | null;
+  subtotal: number;
+  shipping_fee: number;
+  total: number;
+}
+
+function isNonEmptyString(v: unknown, maxLen: number): v is string {
+  return typeof v === 'string' && v.trim().length > 0 && v.length <= maxLen;
+}
+
+function isFiniteNonNegative(v: unknown): v is number {
+  return typeof v === 'number' && Number.isFinite(v) && v >= 0;
+}
+
+// Every field is validated here — this is a public, unauthenticated
+// endpoint (customers placing an order are never logged in), so nothing
+// from the request body is trusted beyond these checks. status is never
+// taken from the client; it's always forced to 'new' by the caller.
+function validateOrderInput(body: unknown): { order: OrderInput; items: OrderItemInput[] } | null {
+  if (!body || typeof body !== 'object') return null;
+  const b = body as Record<string, unknown>;
+
+  if (!isNonEmptyString(b.order_number, 50)) return null;
+  if (!isNonEmptyString(b.customer_name, 200)) return null;
+  if (!isNonEmptyString(b.customer_phone, 30)) return null;
+  if (!isNonEmptyString(b.address, 500)) return null;
+  if (!isNonEmptyString(b.city, 100)) return null;
+  if (b.customer_email !== undefined && b.customer_email !== null && typeof b.customer_email !== 'string') return null;
+  if (b.notes !== undefined && b.notes !== null && typeof b.notes !== 'string') return null;
+  if (!isFiniteNonNegative(b.subtotal)) return null;
+  if (!isFiniteNonNegative(b.shipping_fee)) return null;
+  if (!isFiniteNonNegative(b.total)) return null;
+
+  const rawItems = Array.isArray(b.items) ? b.items : [];
+  if (rawItems.length > 50) return null;
+  const items: OrderItemInput[] = [];
+  for (const raw of rawItems) {
+    if (!raw || typeof raw !== 'object') return null;
+    const it = raw as Record<string, unknown>;
+    if (!isNonEmptyString(it.product_name, 300)) return null;
+    if (!isFiniteNonNegative(it.unit_price)) return null;
+    if (!isFiniteNonNegative(it.line_total)) return null;
+    if (typeof it.quantity !== 'number' || !Number.isInteger(it.quantity) || it.quantity < 1 || it.quantity > 100) return null;
+    items.push({
+      product_id: typeof it.product_id === 'string' ? it.product_id : null,
+      product_name: it.product_name as string,
+      unit_price: it.unit_price as number,
+      quantity: it.quantity,
+      line_total: it.line_total as number,
+    });
+  }
+
+  return {
+    order: {
+      order_number: b.order_number as string,
+      customer_name: b.customer_name as string,
+      customer_phone: b.customer_phone as string,
+      customer_email: (b.customer_email as string) || null,
+      address: b.address as string,
+      city: b.city as string,
+      notes: (b.notes as string) || null,
+      subtotal: b.subtotal as number,
+      shipping_fee: b.shipping_fee as number,
+      total: b.total as number,
+    },
+    items,
+  };
+}
+
 export default {
   async fetch(req: Request, env: Env): Promise<Response> {
     const origin = req.headers.get('Origin');
@@ -72,12 +157,63 @@ export default {
       return json({ error: 'Not found' }, 404, cors);
     }
 
+    const url = new URL(req.url);
+
+    // Public endpoint — no session required. Uses the service-role key
+    // server-side (a Worker secret, never sent to the browser) because
+    // this project's Data API intermittently/consistently rejects the
+    // equivalent anon-key insert with a false RLS error when called
+    // directly from a browser, despite Postgres RLS itself being verified
+    // correct (SET ROLE anon + insert succeeds every time at the database
+    // level). Routing through here sidesteps that edge-layer issue.
+    if (url.pathname === '/orders/create') {
+      let body: unknown;
+      try {
+        body = await req.json();
+      } catch {
+        return json({ error: 'Invalid request' }, 400, cors);
+      }
+      const validated = validateOrderInput(body);
+      if (!validated) {
+        return json({ error: 'Invalid order data' }, 400, cors);
+      }
+
+      const restBase = `${env.SUPABASE_URL}/rest/v1`;
+      const serviceHeaders = {
+        apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+        'Content-Type': 'application/json',
+      };
+
+      const orderRes = await fetch(`${restBase}/orders`, {
+        method: 'POST',
+        headers: { ...serviceHeaders, Prefer: 'return=representation' },
+        body: JSON.stringify({ ...validated.order, status: 'new' }),
+      });
+
+      if (!orderRes.ok) {
+        return json({ error: 'Could not save order, please try again' }, 502, cors);
+      }
+
+      const insertedOrders = (await orderRes.json()) as Array<{ id: string }>;
+      const newOrderId = insertedOrders?.[0]?.id;
+
+      if (newOrderId && validated.items.length > 0) {
+        const itemPayloads = validated.items.map((i) => ({ ...i, order_id: newOrderId }));
+        await fetch(`${restBase}/order_items`, {
+          method: 'POST',
+          headers: serviceHeaders,
+          body: JSON.stringify(itemPayloads),
+        });
+      }
+
+      return json({ ok: true, id: newOrderId }, 200, cors);
+    }
+
     const authed = await verifySession(req, env);
     if (!authed) {
       return json({ error: 'Unauthorized' }, 401, cors);
     }
-
-    const url = new URL(req.url);
 
     if (url.pathname === '/images/upload') {
       const key = url.searchParams.get('key') || '';

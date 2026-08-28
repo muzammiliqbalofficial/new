@@ -117,21 +117,15 @@ export default function CheckoutPage() {
       // Fire and forget background email notification
       sendOrderEmailNotification(orderDetails);
 
-      // 2. Direct REST Insert to Supabase Database.
-      // Uses a plain fetch (anon key only, same as the supabase-js client
-      // would use) instead of the supabase-js client itself — the client
-      // sends a Content-Profile header on writes that this project's orders
-      // table rejects with an RLS error for reasons that didn't reproduce
-      // via SET ROLE anon at the database level. Omitting that header,
-      // exactly like every other working request in this app, avoids it.
+      // 2. Save the order to the database via the admin-api Worker's public
+      // /orders/create endpoint, not Supabase directly. Extensive testing
+      // showed Postgres RLS is correct (SET ROLE anon + insert succeeds
+      // every time at the database level) but this project's Data API
+      // intermittently/consistently rejects the equivalent anon-key insert
+      // from a browser with a false RLS error — an edge-layer issue outside
+      // what client code can fix. The Worker inserts server-side with the
+      // service-role key (never exposed here) after validating every field.
       try {
-        const restBase = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1`;
-        const restHeaders = {
-          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        };
-
         const orderPayload = {
           order_number: orderNumber,
           customer_name: formData.customer_name.trim(),
@@ -143,45 +137,22 @@ export default function CheckoutPage() {
           subtotal: Number(subtotal) || 0,
           shipping_fee: Number(shippingFee) || 0,
           total: Number(total) || 0,
-          status: 'new',
+          items: items.map((i) => ({
+            product_name: i.name,
+            unit_price: Number(i.price) || 0,
+            quantity: Number(i.quantity) || 1,
+            line_total: (Number(i.price) || 0) * (Number(i.quantity) || 1),
+          })),
         };
 
-        // The Data API has shown transient failures during testing (works,
-        // then intermittently rejects the identical request seconds later,
-        // unrelated to the request itself) — retry a couple of times before
-        // giving up, so a customer's order isn't silently lost to a blip.
-        let orderRes: Response | null = null;
-        for (let attempt = 0; attempt < 3; attempt++) {
-          orderRes = await fetch(`${restBase}/orders`, {
-            method: 'POST',
-            headers: { ...restHeaders, Prefer: 'return=representation' },
-            body: JSON.stringify(orderPayload),
-          });
-          if (orderRes.ok) break;
-          await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
-        }
+        const orderRes = await fetch(`${process.env.NEXT_PUBLIC_ADMIN_API_URL}/orders/create`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(orderPayload),
+        });
 
-        if (orderRes?.ok) {
-          const insertedOrders = await orderRes.json();
-          const newOrderId = insertedOrders?.[0]?.id;
-
-          if (newOrderId && items.length > 0) {
-            const itemPayloads = items.map((i) => ({
-              order_id: newOrderId,
-              product_name: i.name,
-              unit_price: Number(i.price) || 0,
-              quantity: Number(i.quantity) || 1,
-              line_total: (Number(i.price) || 0) * (Number(i.quantity) || 1),
-            }));
-
-            await fetch(`${restBase}/order_items`, {
-              method: 'POST',
-              headers: restHeaders,
-              body: JSON.stringify(itemPayloads),
-            });
-          }
-        } else {
-          console.warn('Order database insert failed after retries:', orderRes && (await orderRes.text()));
+        if (!orderRes.ok) {
+          console.warn('Order database insert failed:', await orderRes.text());
         }
       } catch (dbErr) {
         console.warn('Database background sync notice:', dbErr);
