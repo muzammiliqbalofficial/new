@@ -8,7 +8,6 @@ import { Truck, ShieldCheck, ShoppingBag, ArrowLeft, CheckCircle2 } from 'lucide
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/formatters';
 import { sendOrderEmailNotification } from '@/lib/order-notifier';
-import { supabase } from '@/lib/supabase';
 import { trackInitiateCheckout } from '@/lib/tracking';
 
 const POPULAR_CITIES = [
@@ -118,8 +117,21 @@ export default function CheckoutPage() {
       // Fire and forget background email notification
       sendOrderEmailNotification(orderDetails);
 
-      // 2. Direct REST Insert to Supabase Database
+      // 2. Direct REST Insert to Supabase Database.
+      // Uses a plain fetch (anon key only, same as the supabase-js client
+      // would use) instead of the supabase-js client itself — the client
+      // sends a Content-Profile header on writes that this project's orders
+      // table rejects with an RLS error for reasons that didn't reproduce
+      // via SET ROLE anon at the database level. Omitting that header,
+      // exactly like every other working request in this app, avoids it.
       try {
+        const restBase = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1`;
+        const restHeaders = {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        };
+
         const orderPayload = {
           order_number: orderNumber,
           customer_name: formData.customer_name.trim(),
@@ -134,12 +146,23 @@ export default function CheckoutPage() {
           status: 'new',
         };
 
-        const { data: insertedOrders, error: orderErr } = await supabase
-          .from('orders')
-          .insert(orderPayload)
-          .select();
+        // The Data API has shown transient failures during testing (works,
+        // then intermittently rejects the identical request seconds later,
+        // unrelated to the request itself) — retry a couple of times before
+        // giving up, so a customer's order isn't silently lost to a blip.
+        let orderRes: Response | null = null;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          orderRes = await fetch(`${restBase}/orders`, {
+            method: 'POST',
+            headers: { ...restHeaders, Prefer: 'return=representation' },
+            body: JSON.stringify(orderPayload),
+          });
+          if (orderRes.ok) break;
+          await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+        }
 
-        if (!orderErr) {
+        if (orderRes?.ok) {
+          const insertedOrders = await orderRes.json();
           const newOrderId = insertedOrders?.[0]?.id;
 
           if (newOrderId && items.length > 0) {
@@ -151,8 +174,14 @@ export default function CheckoutPage() {
               line_total: (Number(i.price) || 0) * (Number(i.quantity) || 1),
             }));
 
-            await supabase.from('order_items').insert(itemPayloads);
+            await fetch(`${restBase}/order_items`, {
+              method: 'POST',
+              headers: restHeaders,
+              body: JSON.stringify(itemPayloads),
+            });
           }
+        } else {
+          console.warn('Order database insert failed after retries:', orderRes && (await orderRes.text()));
         }
       } catch (dbErr) {
         console.warn('Database background sync notice:', dbErr);
