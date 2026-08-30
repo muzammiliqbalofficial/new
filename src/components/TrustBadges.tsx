@@ -35,8 +35,8 @@ export default function TrustBadges() {
     <section className="py-10 bg-white border-y border-charcoal-border/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-xl mx-auto mb-8">
-          <span className="text-[11px] font-extrabold uppercase tracking-wider text-brand block mb-1">
-            Why Parents Choose tinykids.pk
+          <span className="text-[11px] font-extrabold tracking-wider text-brand block mb-1">
+            Why Parents Choose <span className="lowercase font-black">tinykids.pk</span>
           </span>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-charcoal tracking-tight">
             Soft, Safe & Affordable Baby Clothes

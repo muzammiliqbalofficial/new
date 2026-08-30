@@ -79,22 +79,32 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/category/newborn-starter-sets" className="hover:text-white transition-colors">
-                  Newborn Starter Sets
+                  Starter Sets
                 </Link>
               </li>
               <li>
                 <Link href="/category/bodysuits-rompers" className="hover:text-white transition-colors">
-                  Rompers & Bodysuits
+                  Rompers &amp; Bodysuits
                 </Link>
               </li>
               <li>
                 <Link href="/category/baby-dresses-frocks" className="hover:text-white transition-colors">
-                  Dresses & Frocks
+                  Dresses &amp; Frocks
                 </Link>
               </li>
               <li>
                 <Link href="/category/sweaters-winter-fleece" className="hover:text-white transition-colors">
-                  Sweaters & Winterwear
+                  Sweaters &amp; Fleece
+                </Link>
+              </li>
+              <li>
+                <Link href="/category/baby-caps-hats-socks" className="hover:text-white transition-colors">
+                  Caps &amp; Booties
+                </Link>
+              </li>
+              <li>
+                <Link href="/category/tops-bottoms" className="hover:text-white transition-colors">
+                  Tops &amp; Bottoms
                 </Link>
               </li>
             </ul>

@@ -9,7 +9,7 @@ export default function FloatingWhatsApp() {
   const link = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(defaultMsg)}`;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex items-center group">
+    <div className="fixed bottom-6 right-6 z-50 hidden md:flex items-center group">
       {/* Tooltip on desktop */}
       <div className="hidden md:flex items-center mr-3 px-3.5 py-1.5 bg-charcoal text-white text-xs font-bold rounded-2xl shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap border border-white/10">
         <span>Need help? Chat on WhatsApp</span>

@@ -13,10 +13,11 @@ import { formatPrice, getR2ImageUrl } from '@/lib/formatters';
 const NAV_LINKS = [
   { name: 'All Products', href: '/products' },
   { name: 'Starter Sets', href: '/category/newborn-starter-sets' },
-  { name: 'Rompers', href: '/category/bodysuits-rompers' },
-  { name: 'Dresses', href: '/category/baby-dresses-frocks' },
-  { name: 'Sweaters', href: '/category/sweaters-winter-fleece' },
+  { name: 'Rompers & Bodysuits', href: '/category/bodysuits-rompers' },
+  { name: 'Dresses & Frocks', href: '/category/baby-dresses-frocks' },
+  { name: 'Sweaters & Fleece', href: '/category/sweaters-winter-fleece' },
   { name: 'Caps & Booties', href: '/category/baby-caps-hats-socks' },
+  { name: 'Tops & Bottoms', href: '/category/tops-bottoms' },
 ];
 
 export default function Header() {

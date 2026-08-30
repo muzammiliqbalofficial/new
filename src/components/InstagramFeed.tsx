@@ -43,9 +43,10 @@ export default function InstagramFeed() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 text-center sm:text-left">
           <div>
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-brand flex items-center justify-center sm:justify-start space-x-1">
+            <span className="text-[11px] font-extrabold tracking-wider text-brand flex items-center justify-center sm:justify-start space-x-1">
               <Instagram className="w-3.5 h-3.5 text-[#E4405F]" />
-              <span>@tinykids.pk on Instagram</span>
+              <span className="lowercase font-black">@tinykids.pk</span>
+              <span className="uppercase text-[10px] font-extrabold ml-1">on Instagram</span>
             </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-charcoal tracking-tight">
               Follow Us & Tag Your Little Angels

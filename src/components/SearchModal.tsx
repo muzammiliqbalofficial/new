@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Search, X, ShoppingBag, ArrowRight } from 'lucide-react';
 import MiniSearch from 'minisearch';
-import { formatPrice } from '@/lib/formatters';
+import { formatPrice, getR2ImageUrl } from '@/lib/formatters';
 
 interface SearchDoc {
   id: string;
@@ -163,7 +163,7 @@ export default function SearchModal({ isOpen, onClose }: Props) {
                   <div className="flex items-center space-x-3.5 min-w-0 pr-4">
                     <div className="relative w-12 h-12 rounded-xl bg-cream-200 overflow-hidden flex-shrink-0 border border-charcoal-border/50">
                       <Image
-                        src={product.imageStem || 'placeholder-product'}
+                        src={getR2ImageUrl(product.imageStem, '300w')}
                         alt={product.name}
                         fill
                         sizes="48px"
