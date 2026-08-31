@@ -63,8 +63,8 @@ export default function BismillahIntro() {
 
         {/* Tiny subtle store brand */}
         <div className="pt-4">
-          <span className="text-[11px] text-charcoal-muted uppercase font-bold tracking-widest">
-            tinykids.pk • Premium Kids Store
+          <span className="text-[11px] text-charcoal-muted font-bold tracking-wider">
+            <span className="lowercase font-black">tinykids.pk</span> • Premium Kids Store
           </span>
         </div>
 

@@ -72,9 +72,7 @@ export default function WelcomeOfferModal() {
 
         {/* Text */}
         <div className="space-y-1">
-          <span className="text-[10px] font-extrabold uppercase tracking-wider text-brand block">
-            Welcome to tinykids.pk
-          </span>
+          <span className="text-[11px] font-extrabold tracking-wide text-brand block">Welcome to <span className="lowercase font-black">tinykids.pk</span></span>
           <h3 className="text-xl font-extrabold text-charcoal tracking-tight">
             Flat Rs. 200 OFF on Your First Order!
           </h3>
