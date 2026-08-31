@@ -231,15 +231,15 @@ export default async function ProductDetailPage({ params }: Props) {
                 </Link>
               )}
 
-              <div className="flex items-center space-x-1 text-xs">
+              <a href="#reviews" className="flex items-center space-x-1 text-xs group hover:opacity-80 transition-opacity">
                 <div className="flex items-center text-amber-500">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="w-3.5 h-3.5 fill-current" />
                   ))}
                 </div>
                 <span className="font-extrabold text-charcoal text-xs">4.9</span>
-                <span className="text-charcoal-muted">(42 Reviews)</span>
-              </div>
+                <span className="text-brand font-bold underline underline-offset-2 ml-1 text-[11px]">(42 Verified Reviews)</span>
+              </a>
             </div>
 
             {/* Product Title */}
@@ -266,7 +266,7 @@ export default async function ProductDetailPage({ params }: Props) {
       </div>
 
       {/* Verified Customer Reviews Section */}
-      <ProductReviews productName={product.name} />
+      <ProductReviews productName={product.name} categorySlug={category?.slug || ""} />
 
       {/* Related Products Grid */}
       {related.length > 0 && (
