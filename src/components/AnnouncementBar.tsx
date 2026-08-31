@@ -51,7 +51,7 @@ export default function AnnouncementBar() {
             <ChevronLeft className="w-3.5 h-3.5" />
           </button>
 
-          <div className="flex items-center space-x-2 min-w-[280px] sm:min-w-[420px] justify-center sm:justify-start">
+          <div className="flex items-center space-x-2 flex-1 min-w-0 max-w-full justify-center sm:justify-start">
             <Icon className="w-3.5 h-3.5 flex-shrink-0 text-coral-light animate-pulse" />
             <span
               key={currentIndex}

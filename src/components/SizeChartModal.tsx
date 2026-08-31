@@ -25,7 +25,7 @@ export default function SizeChartModal({ isOpen, onClose }: Props) {
       <div className="fixed inset-0 bg-charcoal/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
 
       {/* Modal Container */}
-      <div className="relative bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-charcoal-border/70 z-10 space-y-6">
+      <div className="relative bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-5 sm:p-8 shadow-2xl border border-charcoal-border/70 z-10 space-y-5">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-charcoal-border/50 pb-4">
           <div className="flex items-center space-x-2.5">

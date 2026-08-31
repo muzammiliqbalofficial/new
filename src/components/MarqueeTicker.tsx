@@ -7,7 +7,7 @@ const ITEMS = [
   { icon: Truck, text: 'Cash on Delivery All Over Pakistan' },
   { icon: Sparkles, text: '100% Pure Combed Cotton' },
   { icon: RefreshCw, text: '7-Day Easy Replacement Guarantee' },
-  { icon: ShieldCheck, text: 'Free Delivery on Orders Above Rs. 2,999' },
+  { icon: ShieldCheck, text: 'Free Delivery on Orders Above Rs. 2,500' },
   { icon: HeartHandshake, text: 'Gentle & Hypoallergenic on Newborn Skin' },
   { icon: Phone, text: 'WhatsApp Support: +92 336 6895035' },
 ];

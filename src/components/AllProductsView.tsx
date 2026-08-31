@@ -234,7 +234,7 @@ export default function AllProductsView({ initialProducts }: Props) {
           </div>
 
           {/* Filter Dropdowns (Gender, Age, Price) */}
-          <div className="pt-3 border-t border-charcoal-border/50 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+          <div className="pt-3 border-t border-charcoal-border/50 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
             {/* Gender Filter */}
             <div className="space-y-1">
               <span className="font-extrabold text-charcoal text-[11px] block">Boy / Girl / Unisex:</span>
