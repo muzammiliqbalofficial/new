@@ -213,7 +213,7 @@ export default async function ProductDetailPage({ params }: Props) {
       {/* Product Main Showcase (2-Col Grid) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
         {/* Left Gallery Column */}
-        <div className="lg:col-span-7 sticky top-24">
+        <div className="lg:col-span-7 lg:sticky lg:top-24">
           <ProductGallery images={product.product_images || []} productName={product.name} />
         </div>
 

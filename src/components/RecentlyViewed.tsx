@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Eye, ArrowRight, Clock } from 'lucide-react';
+import { Clock, ArrowRight } from 'lucide-react';
 import { formatPrice, getR2ImageUrl } from '@/lib/formatters';
 
 interface RecentItem {
@@ -20,33 +20,46 @@ const STORAGE_KEY = 'tinykids_recent_products_v1';
 export function recordRecentlyViewed(item: RecentItem) {
   if (typeof window === 'undefined') return;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    let items: RecentItem[] = raw ? JSON.parse(raw) : [];
-    items = items.filter((i) => i.id !== item.id);
-    items.unshift(item);
-    items = items.slice(0, 8); // Keep top 8
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    if (window.localStorage) {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      let items: RecentItem[] = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(items)) items = [];
+      items = items.filter((i) => i && i.id !== item.id);
+      items.unshift(item);
+      items = items.slice(0, 8); // Keep top 8
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    }
   } catch (e) {
-    console.warn('Failed to save recently viewed item', e);
+    console.warn('Recently viewed save notice:', e);
   }
 }
 
 export default function RecentlyViewed({ currentProductId }: { currentProductId?: string }) {
   const [items, setItems] = useState<RecentItem[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed: RecentItem[] = JSON.parse(raw);
-        setItems(parsed.filter((i) => i.id !== currentProductId));
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            setItems(
+              parsed.filter(
+                (i) => i && typeof i === 'object' && i.id && i.name && i.id !== currentProductId
+              )
+            );
+          }
+        }
       }
     } catch (e) {
-      console.warn('Failed to load recently viewed items', e);
+      console.warn('Recently viewed load notice:', e);
     }
   }, [currentProductId]);
 
-  if (items.length === 0) return null;
+  if (!isMounted || items.length === 0) return null;
 
   return (
     <section className="space-y-4 pt-10 border-t border-charcoal-border/60">

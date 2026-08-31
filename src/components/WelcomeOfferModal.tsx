@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Sparkles, X, Copy, Check, Gift, ShoppingBag } from 'lucide-react';
+import { X, Copy, Check, Gift } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 
 const MODAL_SHOWN_KEY = 'tk_welcome_modal_shown_v1';
@@ -13,22 +13,30 @@ export default function WelcomeOfferModal() {
 
   useEffect(() => {
     try {
-      const shown = sessionStorage.getItem(MODAL_SHOWN_KEY);
-      if (!shown) {
-        // Show after 6 seconds of browsing
-        const timer = setTimeout(() => {
-          setIsOpen(true);
-          sessionStorage.setItem(MODAL_SHOWN_KEY, 'true');
-        }, 6000);
-        return () => clearTimeout(timer);
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        const shown = sessionStorage.getItem(MODAL_SHOWN_KEY);
+        if (!shown) {
+          // Show after 6 seconds of browsing
+          const timer = setTimeout(() => {
+            setIsOpen(true);
+            try {
+              sessionStorage.setItem(MODAL_SHOWN_KEY, 'true');
+            } catch (e) {}
+          }, 6000);
+          return () => clearTimeout(timer);
+        }
       }
     } catch (e) {
-      console.warn('Welcome modal storage check failed', e);
+      console.warn('Welcome modal check notice:', e);
     }
   }, []);
 
   const handleCopyAndApply = () => {
-    navigator.clipboard?.writeText('WELCOME200');
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        navigator.clipboard.writeText('WELCOME200');
+      }
+    } catch (e) {}
     applyCoupon('WELCOME200');
     setCopied(true);
     setTimeout(() => {

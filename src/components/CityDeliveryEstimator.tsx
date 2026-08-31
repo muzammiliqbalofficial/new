@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { MapPin, Truck, CheckCircle2, Clock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { MapPin, Truck } from 'lucide-react';
 
 const CITIES_CONFIG: { [city: string]: { daysMin: number; daysMax: number; note: string } } = {
   Karachi: { daysMin: 1, daysMax: 2, note: 'Fast Local Dispatch (1-2 Days)' },
@@ -20,28 +20,38 @@ const CITIES_CONFIG: { [city: string]: { daysMin: number; daysMax: number; note:
 
 export default function CityDeliveryEstimator() {
   const [selectedCity, setSelectedCity] = useState('Karachi');
+  const [dateRange, setDateRange] = useState('1 - 2 Business Days');
+  const [isMounted, setIsMounted] = useState(false);
 
-  const deliveryEstimation = useMemo(() => {
-    const config = CITIES_CONFIG[selectedCity] || CITIES_CONFIG['Other City in Pakistan'];
-    const now = new Date();
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
-    const minDate = new Date(now);
-    minDate.setDate(now.getDate() + config.daysMin);
+  useEffect(() => {
+    if (!isMounted) return;
+    try {
+      const config = CITIES_CONFIG[selectedCity] || CITIES_CONFIG['Other City in Pakistan'];
+      const now = new Date();
 
-    const maxDate = new Date(now);
-    maxDate.setDate(now.getDate() + config.daysMax);
+      const minDate = new Date(now);
+      minDate.setDate(now.getDate() + config.daysMin);
 
-    const options: Intl.DateTimeFormatOptions = { weekday: 'short', month: 'short', day: 'numeric' };
-    const dateRangeStr =
-      config.daysMin === config.daysMax
-        ? minDate.toLocaleDateString('en-US', options)
-        : `${minDate.toLocaleDateString('en-US', options)} - ${maxDate.toLocaleDateString('en-US', options)}`;
+      const maxDate = new Date(now);
+      maxDate.setDate(now.getDate() + config.daysMax);
 
-    return {
-      dateRange: dateRangeStr,
-      note: config.note,
-    };
-  }, [selectedCity]);
+      const options: Intl.DateTimeFormatOptions = { weekday: 'short', month: 'short', day: 'numeric' };
+      const range =
+        config.daysMin === config.daysMax
+          ? minDate.toLocaleDateString('en-US', options)
+          : `${minDate.toLocaleDateString('en-US', options)} - ${maxDate.toLocaleDateString('en-US', options)}`;
+
+      setDateRange(range);
+    } catch (e) {
+      setDateRange('2 - 3 Business Days');
+    }
+  }, [selectedCity, isMounted]);
+
+  const config = CITIES_CONFIG[selectedCity] || CITIES_CONFIG['Other City in Pakistan'];
 
   return (
     <div className="p-4 rounded-3xl bg-cream-50/80 border border-charcoal-border/70 space-y-3 text-xs">
@@ -74,13 +84,13 @@ export default function CityDeliveryEstimator() {
               Estimated Delivery to {selectedCity}
             </span>
             <span className="font-black text-xs text-charcoal block">
-              {deliveryEstimation.dateRange}
+              {isMounted ? dateRange : config.note}
             </span>
           </div>
         </div>
 
         <span className="text-[10px] font-extrabold px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200">
-          {deliveryEstimation.note}
+          {config.note}
         </span>
       </div>
     </div>

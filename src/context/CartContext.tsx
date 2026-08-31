@@ -45,50 +45,69 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [giftMessage, setGiftMessage] = useState('');
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Load from localStorage on mount
+  // Load from localStorage on mount safely
   useEffect(() => {
     try {
-      const storedCart = localStorage.getItem(CART_STORAGE_KEY);
-      if (storedCart) setCart(JSON.parse(storedCart));
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const storedCart = localStorage.getItem(CART_STORAGE_KEY);
+        if (storedCart) {
+          const parsed = JSON.parse(storedCart);
+          if (Array.isArray(parsed)) {
+            setCart(
+              parsed.filter(
+                (item) => item && typeof item === 'object' && item.id && item.name && !isNaN(Number(item.price))
+              )
+            );
+          }
+        }
 
-      const storedCoupon = localStorage.getItem(COUPON_STORAGE_KEY);
-      if (storedCoupon) {
-        const parsed = JSON.parse(storedCoupon);
-        setCouponCode(parsed.code || '');
-        setDiscount(parsed.discount || 0);
-      }
+        const storedCoupon = localStorage.getItem(COUPON_STORAGE_KEY);
+        if (storedCoupon) {
+          const parsed = JSON.parse(storedCoupon);
+          if (parsed && typeof parsed === 'object') {
+            setCouponCode(String(parsed.code || ''));
+            setDiscount(Number(parsed.discount) || 0);
+          }
+        }
 
-      const storedGift = localStorage.getItem(GIFT_STORAGE_KEY);
-      if (storedGift) {
-        const parsed = JSON.parse(storedGift);
-        setIsGiftBox(Boolean(parsed.isGiftBox));
-        setGiftMessage(parsed.giftMessage || '');
+        const storedGift = localStorage.getItem(GIFT_STORAGE_KEY);
+        if (storedGift) {
+          const parsed = JSON.parse(storedGift);
+          if (parsed && typeof parsed === 'object') {
+            setIsGiftBox(Boolean(parsed.isGiftBox));
+            setGiftMessage(String(parsed.giftMessage || ''));
+          }
+        }
       }
     } catch (e) {
-      console.warn('Failed to load cart state from storage', e);
+      console.warn('Cart storage load notice:', e);
     } finally {
       setIsHydrated(true);
     }
   }, []);
 
-  // Sync cart to localStorage
+  // Sync cart to localStorage safely
   useEffect(() => {
     if (!isHydrated) return;
     try {
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+      }
     } catch (e) {
-      console.warn('Failed to save cart to storage', e);
+      console.warn('Cart storage save notice:', e);
     }
   }, [cart, isHydrated]);
 
-  // Sync coupon & gift state
+  // Sync coupon & gift state safely
   useEffect(() => {
     if (!isHydrated) return;
     try {
-      localStorage.setItem(COUPON_STORAGE_KEY, JSON.stringify({ code: couponCode, discount }));
-      localStorage.setItem(GIFT_STORAGE_KEY, JSON.stringify({ isGiftBox, giftMessage }));
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem(COUPON_STORAGE_KEY, JSON.stringify({ code: couponCode, discount }));
+        localStorage.setItem(GIFT_STORAGE_KEY, JSON.stringify({ isGiftBox, giftMessage }));
+      }
     } catch (e) {
-      console.warn('Failed to save extra state to storage', e);
+      console.warn('Extra storage save notice:', e);
     }
   }, [couponCode, discount, isGiftBox, giftMessage, isHydrated]);
 
@@ -128,14 +147,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setGiftMessage('');
   };
 
-  const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
+  const subtotal = Array.isArray(cart)
+    ? cart.reduce((acc, item) => acc + (Number(item.price) || 0) * (Number(item.quantity) || 1), 0)
+    : 0;
+
+  const totalItems = Array.isArray(cart)
+    ? cart.reduce((acc, item) => acc + (Number(item.quantity) || 1), 0)
+    : 0;
+
   const giftBoxFee = isGiftBox ? 150 : 0;
   const shippingFee = subtotal >= 2500 || subtotal === 0 ? 0 : 199;
-  const finalTotal = Math.max(0, subtotal + shippingFee + giftBoxFee - discount);
+  const finalTotal = Math.max(0, subtotal + shippingFee + giftBoxFee - (Number(discount) || 0));
 
   const applyCoupon = (code: string): { success: boolean; message: string } => {
-    const clean = code.trim().toUpperCase();
+    const clean = String(code || '').trim().toUpperCase();
     if (!clean) return { success: false, message: 'Please enter a coupon code.' };
 
     if (clean === 'WELCOME200' || clean === 'TINY200') {
