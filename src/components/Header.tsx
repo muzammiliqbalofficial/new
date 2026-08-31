@@ -18,6 +18,8 @@ const NAV_LINKS = [
   { name: 'Sweaters & Fleece', href: '/category/sweaters-winter-fleece' },
   { name: 'Caps & Booties', href: '/category/baby-caps-hats-socks' },
   { name: 'Tops & Bottoms', href: '/category/tops-bottoms' },
+  { name: 'Machine Embroidery', href: '/category/machine-embroidery-customize' },
+  { name: 'Printing Customize', href: '/category/printing-customize' },
 ];
 
 export default function Header() {

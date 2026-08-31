@@ -107,6 +107,16 @@ export default function Footer() {
                   Tops &amp; Bottoms
                 </Link>
               </li>
+              <li>
+                <Link href="/category/machine-embroidery-customize" className="hover:text-white transition-colors text-coral-light font-bold">
+                  Machine Embroidery
+                </Link>
+              </li>
+              <li>
+                <Link href="/category/printing-customize" className="hover:text-white transition-colors text-coral-light font-bold">
+                  Printing Customize
+                </Link>
+              </li>
             </ul>
           </div>
 

@@ -18,6 +18,8 @@ const CATEGORY_OPTIONS = [
   { label: 'Sweaters & Fleece', slug: 'sweaters-winter-fleece' },
   { label: 'Caps & Booties', slug: 'baby-caps-hats-socks' },
   { label: 'Tops & Bottoms', slug: 'tops-bottoms' },
+  { label: 'Machine Embroidery', slug: 'machine-embroidery-customize' },
+  { label: 'Printing Customize', slug: 'printing-customize' },
 ];
 
 const GENDER_OPTIONS = [

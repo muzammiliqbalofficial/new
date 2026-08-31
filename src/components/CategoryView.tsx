@@ -1,6 +1,7 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { SlidersHorizontal, ArrowUpDown, X, Sparkles } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
 import { Product, Category } from '@/lib/types';
@@ -232,18 +233,34 @@ export default function CategoryView({ category, initialProducts }: Props) {
           ))}
         </div>
       ) : (
-        <div className="py-16 text-center bg-white rounded-3xl border border-charcoal-border/60 p-8 shadow-soft">
-          <Sparkles className="w-10 h-10 text-charcoal-muted/40 mx-auto mb-3" />
-          <h3 className="text-base font-bold text-charcoal">No products match your filter</h3>
-          <p className="text-xs text-charcoal-muted mt-1 max-w-sm mx-auto">
-            Try adjusting your age or gender filters to see available products in this category.
-          </p>
-          <button
-            onClick={resetFilters}
-            className="mt-5 px-5 py-2.5 bg-brand text-white text-xs font-semibold rounded-xl hover:bg-brand-dark transition-colors shadow-sm"
-          >
-            Clear Filters
-          </button>
+        <div className="py-16 text-center bg-white rounded-3xl border border-charcoal-border/60 p-8 shadow-soft space-y-4 max-w-2xl mx-auto">
+          <div className="w-14 h-14 bg-brand-soft text-brand rounded-2xl flex items-center justify-center mx-auto">
+            <Sparkles className="w-7 h-7" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-lg font-extrabold text-charcoal">
+              {category.name} Collection
+            </h3>
+            <p className="text-xs text-charcoal-muted max-w-md mx-auto leading-relaxed font-medium">
+              New customized designs are being added! We are accepting custom baby name embroidery and printing orders directly on WhatsApp.
+            </p>
+          </div>
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <a
+              href={"https://wa.me/923366895035?text=" + encodeURIComponent("Assalam o Alaikum tinykids.pk! I want to inquire about customized baby clothes (" + category.name + "). Please share available designs and options.")}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto px-6 py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-extrabold rounded-2xl shadow-xs transition-colors flex items-center justify-center space-x-2"
+            >
+              <span>Custom Order via WhatsApp</span>
+            </a>
+            <Link
+              href="/products"
+              className="w-full sm:w-auto px-6 py-3 bg-cream-100 hover:bg-cream-200 text-charcoal text-xs font-bold rounded-2xl border border-charcoal-border/70 transition-colors"
+            >
+              Browse In-Stock Products
+            </Link>
+          </div>
         </div>
       )}
 
