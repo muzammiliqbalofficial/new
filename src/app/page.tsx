@@ -9,6 +9,7 @@ import TrustBadges from '@/components/TrustBadges';
 import FaqSection from '@/components/FaqSection';
 import MarqueeTicker from '@/components/MarqueeTicker';
 import InstagramFeed from '@/components/InstagramFeed';
+import RecentlyViewed from '@/components/RecentlyViewed';
 import { Product } from '@/lib/types';
 
 export const revalidate = 3600;
@@ -190,6 +191,10 @@ export default async function HomePage() {
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
+      </section>
+
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <RecentlyViewed />
       </section>
 
       {/* 8. Instagram Social Proof Feed */}

@@ -7,6 +7,7 @@ import CartDrawer from '@/components/CartDrawer';
 import FloatingWhatsApp from '@/components/FloatingWhatsApp';
 import BismillahIntro from '@/components/BismillahIntro';
 import MobileBottomNav from '@/components/MobileBottomNav';
+import WelcomeOfferModal from '@/components/WelcomeOfferModal';
 import { CartProvider } from '@/context/CartContext';
 
 export default function StorefrontChrome({ children }: { children: React.ReactNode }) {
@@ -26,6 +27,7 @@ export default function StorefrontChrome({ children }: { children: React.ReactNo
       <CartDrawer />
       <FloatingWhatsApp />
       <MobileBottomNav />
+      <WelcomeOfferModal />
     </CartProvider>
   );
 }

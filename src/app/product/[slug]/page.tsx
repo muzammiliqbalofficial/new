@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase';
 import ProductGallery from '@/components/ProductGallery';
 import ProductActions from '@/components/ProductActions';
 import ProductReviews from '@/components/ProductReviews';
+import RecentlyViewed from '@/components/RecentlyViewed';
 import ProductCard from '@/components/ProductCard';
 import { Product } from '@/lib/types';
 import { formatPrice, resolveMainImage, getR2ImageUrl } from '@/lib/formatters';
@@ -292,6 +293,9 @@ export default async function ProductDetailPage({ params }: Props) {
           </div>
         </section>
       )}
+
+      {/* Recently Viewed Products by User */}
+      <RecentlyViewed currentProductId={product.id} />
     </div>
   );
 }
