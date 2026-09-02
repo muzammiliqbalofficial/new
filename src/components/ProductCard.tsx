@@ -21,10 +21,12 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
   const discountPercent = hasDiscount
     ? Math.round((((product.sale_price || 0) - (product.price || 0)) / (product.sale_price || 1)) * 100)
     : 0;
+  const isOutOfStock = product.stock <= 0;
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isOutOfStock) return;
 
     addToCart(
       {
@@ -66,23 +68,30 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
               -{discountPercent}% OFF
             </span>
           )}
-          {product.stock > 0 && product.stock <= 5 && (
+          {!isOutOfStock && product.stock <= 5 && (
             <span className="bg-amber-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-xs uppercase tracking-tight">
               Low Stock
+            </span>
+          )}
+          {isOutOfStock && (
+            <span className="bg-charcoal-muted text-white text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-xs uppercase tracking-tight">
+              Out of Stock
             </span>
           )}
         </div>
 
         {/* Floating Quick Action Button on Hover */}
-        <div className="absolute inset-x-3 bottom-3 hidden sm:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
-          <button
-            onClick={handleQuickAdd}
-            className="w-full py-2.5 bg-charcoal/90 hover:bg-brand text-white font-bold text-xs rounded-2xl shadow-lg backdrop-blur-sm flex items-center justify-center space-x-1.5 transition-colors"
-          >
-            <ShoppingBag className="w-3.5 h-3.5" />
-            <span>Quick Add</span>
-          </button>
-        </div>
+        {!isOutOfStock && (
+          <div className="absolute inset-x-3 bottom-3 hidden sm:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+            <button
+              onClick={handleQuickAdd}
+              className="w-full py-2.5 bg-charcoal/90 hover:bg-brand text-white font-bold text-xs rounded-2xl shadow-lg backdrop-blur-sm flex items-center justify-center space-x-1.5 transition-colors"
+            >
+              <ShoppingBag className="w-3.5 h-3.5" />
+              <span>Quick Add</span>
+            </button>
+          </div>
+        )}
       </Link>
 
       {/* Product Content Details */}
@@ -114,20 +123,26 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
                 </span>
               )}
             </div>
-            <span className="text-[10px] text-emerald-600 font-bold flex items-center space-x-1">
-              <Check className="w-3 h-3 inline" />
-              <span>In Stock • Ready to Ship</span>
-            </span>
+            {isOutOfStock ? (
+              <span className="text-[10px] text-charcoal-muted font-bold">Out of Stock</span>
+            ) : (
+              <span className="text-[10px] text-emerald-600 font-bold flex items-center space-x-1">
+                <Check className="w-3 h-3 inline" />
+                <span>In Stock • Ready to Ship</span>
+              </span>
+            )}
           </div>
 
           {/* Mobile Add to Cart Button */}
-          <button
-            onClick={handleQuickAdd}
-            aria-label="Add to cart"
-            className="sm:hidden p-2 rounded-2xl bg-brand text-white shadow-xs hover:bg-brand-dark transition-colors active:scale-95 flex-shrink-0"
-          >
-            <ShoppingBag className="w-4 h-4" />
-          </button>
+          {!isOutOfStock && (
+            <button
+              onClick={handleQuickAdd}
+              aria-label="Add to cart"
+              className="sm:hidden p-2 rounded-2xl bg-brand text-white shadow-xs hover:bg-brand-dark transition-colors active:scale-95 flex-shrink-0"
+            >
+              <ShoppingBag className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
     </div>

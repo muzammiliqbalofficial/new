@@ -115,6 +115,7 @@ export default function ProductActions({ product, imageStem, whatsappNumber = '9
   }, []);
 
   const isPriced = product.price !== null && product.price !== undefined && product.price > 0;
+  const isOutOfStock = product.stock <= 0;
   const cleanPhone = whatsappNumber.replace(/[^0-9]/g, '');
 
   const itemNameWithCustomization = babyName.trim()
@@ -125,7 +126,7 @@ export default function ProductActions({ product, imageStem, whatsappNumber = '9
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMsg)}`;
 
   const handleAddToCart = () => {
-    if (!isPriced || !product.price) return;
+    if (!isPriced || !product.price || isOutOfStock) return;
     addToCart(
       {
         id: product.id,
@@ -142,7 +143,7 @@ export default function ProductActions({ product, imageStem, whatsappNumber = '9
   };
 
   const handleBuyNow = () => {
-    if (!isPriced || !product.price) return;
+    if (!isPriced || !product.price || isOutOfStock) return;
     addToCart(
       {
         id: product.id,
@@ -204,10 +205,17 @@ export default function ProductActions({ product, imageStem, whatsappNumber = '9
       </div>
 
       {/* 3. Stock Availability Badge */}
-      <div className="flex items-center space-x-2 text-xs font-bold text-emerald-700 bg-emerald-50 px-3.5 py-2 rounded-2xl border border-emerald-200/80">
-        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
-        <span>In Stock — Ready for Same-Day Dispatch from Karachi</span>
-      </div>
+      {isOutOfStock ? (
+        <div className="flex items-center space-x-2 text-xs font-bold text-charcoal-light bg-cream-200 px-3.5 py-2 rounded-2xl border border-charcoal-border">
+          <span className="w-2 h-2 rounded-full bg-charcoal-muted flex-shrink-0" />
+          <span>Out of Stock — Currently Unavailable</span>
+        </div>
+      ) : (
+        <div className="flex items-center space-x-2 text-xs font-bold text-emerald-700 bg-emerald-50 px-3.5 py-2 rounded-2xl border border-emerald-200/80">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
+          <span>In Stock — Ready for Same-Day Dispatch from Karachi</span>
+        </div>
+      )}
 
       {/* 4. Size Selector */}
       <div className="space-y-2">
@@ -315,7 +323,8 @@ export default function ProductActions({ product, imageStem, whatsappNumber = '9
           {/* Add to Cart Button */}
           <button
             onClick={handleAddToCart}
-            className={`flex-1 py-4 rounded-2xl font-extrabold text-xs sm:text-sm flex items-center justify-center space-x-2 transition-all shadow-card hover:shadow-hover active:scale-98 ${
+            disabled={isOutOfStock}
+            className={`flex-1 py-4 rounded-2xl font-extrabold text-xs sm:text-sm flex items-center justify-center space-x-2 transition-all shadow-card hover:shadow-hover active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:active:scale-100 ${
               added
                 ? 'bg-emerald-600 text-white'
                 : 'bg-white hover:bg-cream-100 text-charcoal border border-charcoal-border/80'
@@ -329,7 +338,7 @@ export default function ProductActions({ product, imageStem, whatsappNumber = '9
             ) : (
               <>
                 <ShoppingBag className="w-4 h-4 text-brand" />
-                <span>Add to Bag</span>
+                <span>{isOutOfStock ? 'Out of Stock' : 'Add to Bag'}</span>
               </>
             )}
           </button>
@@ -338,10 +347,11 @@ export default function ProductActions({ product, imageStem, whatsappNumber = '9
         {/* Buy Now Primary CTA */}
         <button
           onClick={handleBuyNow}
-          className="w-full py-4 rounded-2xl bg-brand hover:bg-brand-dark text-white font-extrabold text-xs sm:text-sm flex items-center justify-center space-x-2 shadow-card hover:shadow-hover transition-all active:scale-98"
+          disabled={isOutOfStock}
+          className="w-full py-4 rounded-2xl bg-brand hover:bg-brand-dark text-white font-extrabold text-xs sm:text-sm flex items-center justify-center space-x-2 shadow-card hover:shadow-hover transition-all active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:active:scale-100 disabled:bg-charcoal-muted"
         >
           <Zap className="w-4 h-4 fill-current text-cream-200" />
-          <span>Buy Now — Cash on Delivery</span>
+          <span>{isOutOfStock ? 'Currently Unavailable' : 'Buy Now — Cash on Delivery'}</span>
         </button>
 
         {/* Direct WhatsApp & Call Buttons */}
@@ -426,19 +436,27 @@ export default function ProductActions({ product, imageStem, whatsappNumber = '9
             </div>
 
             <div className="flex items-center space-x-2 flex-shrink-0">
-              <button
-                onClick={handleAddToCart}
-                className="px-3.5 py-2.5 bg-white border border-charcoal-border/80 rounded-xl font-extrabold text-xs text-charcoal shadow-xs"
-              >
-                {added ? '✓ Added' : 'Add to Bag'}
-              </button>
-              <button
-                onClick={handleBuyNow}
-                className="px-4 py-2.5 bg-brand hover:bg-brand-dark text-white rounded-xl font-extrabold text-xs shadow-card flex items-center space-x-1"
-              >
-                <Zap className="w-3.5 h-3.5 fill-current text-cream-200" />
-                <span>Buy Now</span>
-              </button>
+              {isOutOfStock ? (
+                <span className="px-4 py-2.5 bg-cream-200 text-charcoal-light rounded-xl font-extrabold text-xs">
+                  Out of Stock
+                </span>
+              ) : (
+                <>
+                  <button
+                    onClick={handleAddToCart}
+                    className="px-3.5 py-2.5 bg-white border border-charcoal-border/80 rounded-xl font-extrabold text-xs text-charcoal shadow-xs"
+                  >
+                    {added ? '✓ Added' : 'Add to Bag'}
+                  </button>
+                  <button
+                    onClick={handleBuyNow}
+                    className="px-4 py-2.5 bg-brand hover:bg-brand-dark text-white rounded-xl font-extrabold text-xs shadow-card flex items-center space-x-1"
+                  >
+                    <Zap className="w-3.5 h-3.5 fill-current text-cream-200" />
+                    <span>Buy Now</span>
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
